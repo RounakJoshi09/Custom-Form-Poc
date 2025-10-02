@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Paper, 
   Box, 
@@ -10,12 +10,16 @@ import {
   Checkbox,
   Divider,
   Button,
-  Alert
+  Alert,
+  Snackbar
 } from '@mui/material';
+import { Save as SaveIcon } from '@mui/icons-material';
 import { useBuilder } from '@/context/BuilderContext';
+import { saveForm, updateForm } from '@/lib/persistence';
 
 export default function FieldConfigPanel() {
   const { state, actions } = useBuilder();
+  const [saveNotification, setSaveNotification] = useState({ open: false, message: '', type: 'success' as 'success' | 'error' });
   
   const selectedField = state.selectedFieldId 
     ? state.schema.fields.find(f => f.id === state.selectedFieldId)
@@ -33,6 +37,35 @@ export default function FieldConfigPanel() {
 
   const handleFormMetadataChange = (field: string, value: string) => {
     actions.updateFormMetadata({ [field]: value });
+  };
+
+  const handleSaveForm = async () => {
+    try {
+      // Check if this is a new form or an update
+      const isNewForm = state.schema.metadata.name === 'Untitled Form';
+      
+      if (isNewForm) {
+        const result = await saveForm(state.schema);
+        if (result.success) {
+          setSaveNotification({ open: true, message: 'Form saved successfully!', type: 'success' });
+        } else {
+          setSaveNotification({ open: true, message: result.error || 'Failed to save form', type: 'error' });
+        }
+      } else {
+        const result = await updateForm(state.schema);
+        if (result.success) {
+          setSaveNotification({ open: true, message: 'Form updated successfully!', type: 'success' });
+        } else {
+          setSaveNotification({ open: true, message: result.error || 'Failed to update form', type: 'error' });
+        }
+      }
+    } catch (error) {
+      setSaveNotification({ open: true, message: 'An error occurred while saving', type: 'error' });
+    }
+  };
+
+  const handleCloseNotification = () => {
+    setSaveNotification(prev => ({ ...prev, open: false }));
   };
 
   if (!selectedField) {
@@ -73,6 +106,28 @@ export default function FieldConfigPanel() {
             Select a field to configure its properties
           </Alert>
         </Box>
+
+        <Box sx={{ mt: 3 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            startIcon={<SaveIcon />}
+            onClick={handleSaveForm}
+          >
+            Save Form
+          </Button>
+        </Box>
+
+        <Snackbar
+          open={saveNotification.open}
+          autoHideDuration={6000}
+          onClose={handleCloseNotification}
+        >
+          <Alert onClose={handleCloseNotification} severity={saveNotification.type}>
+            {saveNotification.message}
+          </Alert>
+        </Snackbar>
       </Paper>
     );
   }
@@ -217,6 +272,16 @@ export default function FieldConfigPanel() {
           Delete Field
         </Button>
       </Box>
+
+      <Snackbar
+        open={saveNotification.open}
+        autoHideDuration={6000}
+        onClose={handleCloseNotification}
+      >
+        <Alert onClose={handleCloseNotification} severity={saveNotification.type}>
+          {saveNotification.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }
