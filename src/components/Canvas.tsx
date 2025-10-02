@@ -5,7 +5,6 @@ import {
   Paper,
   Box,
   Typography,
-  Grid,
   ButtonGroup,
   Button,
   Divider,
@@ -14,7 +13,7 @@ import { useDrop } from 'react-dnd';
 import { useBuilder } from '@/context/BuilderContext';
 import { getColumnFields, getColumnConfig } from '@/lib/layout';
 import { DND_ITEM_TYPES, DragItem } from '@/lib/dnd-types';
-import { FieldType, LayoutType, FieldPosition } from '@/lib/schema';
+import { FieldType, LayoutType } from '@/lib/schema';
 import FieldCard from './FieldCard';
 
 interface DropZoneProps {
@@ -48,7 +47,7 @@ function DropZone({ columnId, children }: DropZoneProps) {
     <Box
       ref={drop}
       sx={{
-        minHeight: 200,
+        minHeight: '60vh',
         p: 1,
         border: '2px dashed',
         borderColor: isOver ? 'primary.main' : 'grey.300',
@@ -81,11 +80,7 @@ function Column({ columnId, width }: ColumnProps) {
   }
 
   return (
-    <Grid
-      item
-      xs={12}
-      md={width === 25 ? 3 : width === 50 ? 6 : width === 75 ? 9 : 12}
-    >
+    <Box sx={{ flex: `0 0 ${width}%`, maxWidth: `${width}%` }}>
       <Paper
         elevation={0}
         sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
@@ -114,13 +109,15 @@ function Column({ columnId, width }: ColumnProps) {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {/* Render fields in rows */}
               {columnFields.map((row, rowIndex) => (
-                <Grid container spacing={1} key={rowIndex}>
+                <Box sx={{ display: 'flex', gap: 1 }} key={rowIndex}>
                   {Array.from({ length: columnConfig.slotsPerRow }).map(
                     (_, slotIndex) => (
-                      <Grid
-                        item
-                        xs={12 / columnConfig.slotsPerRow}
+                      <Box
                         key={slotIndex}
+                        sx={{
+                          flex: `0 0 ${100 / columnConfig.slotsPerRow}%`,
+                          maxWidth: `${100 / columnConfig.slotsPerRow}%`,
+                        }}
                       >
                         {row[slotIndex] ? (
                           <FieldCard
@@ -149,16 +146,16 @@ function Column({ columnId, width }: ColumnProps) {
                             </Typography>
                           </Box>
                         )}
-                      </Grid>
+                      </Box>
                     )
                   )}
-                </Grid>
+                </Box>
               ))}
             </Box>
           )}
         </DropZone>
       </Paper>
-    </Grid>
+    </Box>
   );
 }
 
@@ -200,11 +197,11 @@ export default function Canvas() {
 
       {/* Canvas Area */}
       <Box sx={{ flex: 1, p: 2, overflow: 'auto' }}>
-        <Grid container spacing={2}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
           {layout.columns.map((column) => (
             <Column key={column.id} columnId={column.id} width={column.width} />
           ))}
-        </Grid>
+        </Box>
       </Box>
     </Paper>
   );
