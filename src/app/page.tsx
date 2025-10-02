@@ -23,11 +23,18 @@ export default function Home() {
         <Typography variant="body1" sx={{ mt: 2, mb: 4 }}>
           The form builder will be implemented step by step.
         </Typography>
-        <Link href="/builder" style={{ textDecoration: 'none' }}>
-          <Button variant="contained" size="large">
-            Open Form Builder
-          </Button>
-        </Link>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Link href="/builder" style={{ textDecoration: 'none' }}>
+            <Button variant="contained" size="large">
+              Open Form Builder
+            </Button>
+          </Link>
+          <Link href="/forms" style={{ textDecoration: 'none' }}>
+            <Button variant="outlined" size="large">
+              View Saved Forms
+            </Button>
+          </Link>
+        </Box>
       </Box>
     </Container>
   );
