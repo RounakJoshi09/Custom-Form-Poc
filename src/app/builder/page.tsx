@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Container, Box, Grid, Tabs, Tab, Paper } from '@mui/material';
+import { Container, Box, Tabs, Tab, Paper } from '@mui/material';
 import { BuilderProvider, useBuilder } from '@/context/BuilderContext';
 import FieldPalette from '@/components/FieldPalette';
 import Canvas from '@/components/Canvas';
@@ -18,17 +18,24 @@ function BuilderContent() {
 
   return (
     <Container maxWidth={false} sx={{ py: 2 }}>
-      <Grid container spacing={2} sx={{ height: 'calc(100vh - 32px)' }}>
-        {/* Field Palette */}
-        <Grid item xs={12} md={3}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          height: 'calc(100vh - 32px)',
+          alignItems: 'stretch',
+        }}
+      >
+        {/* Field Palette - 10% */}
+        <Box sx={{ width: '10%', minWidth: 180, overflow: 'auto' }}>
           <FieldPalette />
-        </Grid>
+        </Box>
 
-        {/* Main Content Area */}
-        <Grid item xs={12} md={6}>
+        {/* Main Content Area - 80% */}
+        <Box sx={{ width: '80%', minWidth: 600, display: 'flex' }}>
           <Paper
             elevation={1}
-            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}
           >
             <Tabs value={currentTab} onChange={handleTabChange}>
               <Tab label="Canvas" />
@@ -39,13 +46,13 @@ function BuilderContent() {
               {currentTab === 1 && <PreviewPanel schema={state.schema} />}
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
-        {/* Configuration Panel */}
-        <Grid item xs={12} md={3}>
+        {/* Configuration Panel - 10% */}
+        <Box sx={{ width: '10%', minWidth: 220, overflow: 'auto' }}>
           <FieldConfigPanel />
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Container>
   );
 }
