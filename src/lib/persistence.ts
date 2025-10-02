@@ -8,7 +8,9 @@ export interface SavedFormSummary {
 }
 
 // API client functions
-export async function saveForm(schema: FormSchema): Promise<{ success: boolean; error?: string }> {
+export async function saveForm(
+  schema: FormSchema
+): Promise<{ success: boolean; error?: string }> {
   try {
     const response = await fetch('/api/forms', {
       method: 'POST',
@@ -29,7 +31,9 @@ export async function saveForm(schema: FormSchema): Promise<{ success: boolean; 
   }
 }
 
-export async function updateForm(schema: FormSchema): Promise<{ success: boolean; error?: string }> {
+export async function updateForm(
+  schema: FormSchema
+): Promise<{ success: boolean; error?: string }> {
   try {
     const response = await fetch(`/api/forms/${schema.metadata.id}`, {
       method: 'PUT',
@@ -50,7 +54,9 @@ export async function updateForm(schema: FormSchema): Promise<{ success: boolean
   }
 }
 
-export async function loadForm(id: string): Promise<{ schema?: FormSchema; error?: string }> {
+export async function loadForm(
+  id: string
+): Promise<{ schema?: FormSchema; error?: string }> {
   try {
     const response = await fetch(`/api/forms/${id}`);
 
@@ -65,7 +71,10 @@ export async function loadForm(id: string): Promise<{ schema?: FormSchema; error
   }
 }
 
-export async function listForms(): Promise<{ forms?: SavedFormSummary[]; error?: string }> {
+export async function listForms(): Promise<{
+  forms?: SavedFormSummary[];
+  error?: string;
+}> {
   try {
     const response = await fetch('/api/forms');
 
@@ -80,7 +89,9 @@ export async function listForms(): Promise<{ forms?: SavedFormSummary[]; error?:
   }
 }
 
-export async function deleteForm(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteForm(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
   try {
     const response = await fetch(`/api/forms/${id}`, {
       method: 'DELETE',

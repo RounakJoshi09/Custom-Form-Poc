@@ -15,13 +15,16 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = params;
-    
+
     if (!id) {
-      return NextResponse.json({ error: 'Form ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Form ID is required' },
+        { status: 400 }
+      );
     }
-    
+
     const filePath = path.join(FORMS_DIR, `${id}.json`);
-    
+
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       const schema: FormSchema = JSON.parse(content);
@@ -32,7 +35,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
   } catch (error) {
     console.error('Error getting form:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -40,35 +46,44 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = params;
-    
+
     if (!id) {
-      return NextResponse.json({ error: 'Form ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Form ID is required' },
+        { status: 400 }
+      );
     }
-    
+
     const schema: FormSchema = await request.json();
-    
+
     // Validate that the ID in the schema matches the URL parameter
     if (schema.metadata?.id !== id) {
       return NextResponse.json({ error: 'Form ID mismatch' }, { status: 400 });
     }
-    
+
     // Validate required fields
     if (!schema.metadata?.name) {
-      return NextResponse.json({ error: 'Invalid form schema' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid form schema' },
+        { status: 400 }
+      );
     }
-    
+
     const filePath = path.join(FORMS_DIR, `${id}.json`);
-    
+
     // Update the updatedAt timestamp
     schema.metadata.updatedAt = new Date().toISOString();
-    
+
     // Save the form
     await fs.writeFile(filePath, JSON.stringify(schema, null, 2));
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating form:', error);
-    return NextResponse.json({ error: 'Failed to update form' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update form' },
+      { status: 500 }
+    );
   }
 }
 
@@ -76,13 +91,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = params;
-    
+
     if (!id) {
-      return NextResponse.json({ error: 'Form ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Form ID is required' },
+        { status: 400 }
+      );
     }
-    
+
     const filePath = path.join(FORMS_DIR, `${id}.json`);
-    
+
     try {
       await fs.unlink(filePath);
       return NextResponse.json({ success: true });
@@ -92,6 +110,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
   } catch (error) {
     console.error('Error deleting form:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

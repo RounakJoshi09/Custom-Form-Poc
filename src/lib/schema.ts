@@ -1,11 +1,11 @@
 // Field types supported by the form builder
-export type FieldType = 
-  | 'text' 
-  | 'textarea' 
-  | 'select' 
-  | 'date' 
-  | 'datetime' 
-  | 'checkbox' 
+export type FieldType =
+  | 'text'
+  | 'textarea'
+  | 'select'
+  | 'date'
+  | 'datetime'
+  | 'checkbox'
   | 'file';
 
 // Validation rules for fields

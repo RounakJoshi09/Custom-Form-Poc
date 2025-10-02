@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Paper, 
-  Box, 
-  Typography, 
+import {
+  Paper,
+  Box,
+  Typography,
   TextField,
   Select,
   MenuItem,
@@ -15,7 +15,7 @@ import {
   Button,
   Divider,
   Alert,
-  Grid
+  Grid,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
 import { getColumnFields, getColumnConfig } from '@/lib/layout';
@@ -134,11 +134,7 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
 
     default:
       return (
-        <TextField
-          {...commonProps}
-          disabled
-          value="Unsupported field type"
-        />
+        <TextField {...commonProps} disabled value="Unsupported field type" />
       );
   }
 }
@@ -152,24 +148,39 @@ interface PreviewColumnProps {
   onFieldChange: (fieldKey: string, value: any) => void;
 }
 
-function PreviewColumn({ 
-  columnId, 
-  width, 
-  schema, 
-  formData, 
-  errors, 
-  onFieldChange 
+function PreviewColumn({
+  columnId,
+  width,
+  schema,
+  formData,
+  errors,
+  onFieldChange,
 }: PreviewColumnProps) {
-  const columnFields = getColumnFields(columnId, schema.fields, schema.positions);
+  const columnFields = getColumnFields(
+    columnId,
+    schema.fields,
+    schema.positions
+  );
   const columnConfig = getColumnConfig(schema.layout, columnId);
 
   if (!columnConfig) return null;
 
   return (
-    <Grid item xs={12} md={width === 25 ? 3 : width === 50 ? 6 : width === 75 ? 9 : 12}>
+    <Grid
+      item
+      xs={12}
+      md={width === 25 ? 3 : width === 50 ? 6 : width === 75 ? 9 : 12}
+    >
       <Box sx={{ p: 1 }}>
         {columnFields.length === 0 ? (
-          <Box sx={{ minHeight: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box
+            sx={{
+              minHeight: 100,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Typography variant="body2" color="text.secondary">
               No fields in this column
             </Typography>
@@ -178,21 +189,34 @@ function PreviewColumn({
           <Box>
             {columnFields.map((row, rowIndex) => (
               <Grid container spacing={2} key={rowIndex} sx={{ mb: 1 }}>
-                {Array.from({ length: columnConfig.slotsPerRow }).map((_, slotIndex) => {
-                  const field = row[slotIndex];
-                  if (!field) return <Grid item xs={12 / columnConfig.slotsPerRow} key={slotIndex} />;
+                {Array.from({ length: columnConfig.slotsPerRow }).map(
+                  (_, slotIndex) => {
+                    const field = row[slotIndex];
+                    if (!field)
+                      return (
+                        <Grid
+                          item
+                          xs={12 / columnConfig.slotsPerRow}
+                          key={slotIndex}
+                        />
+                      );
 
-                  return (
-                    <Grid item xs={12 / columnConfig.slotsPerRow} key={slotIndex}>
-                      <PreviewField
-                        field={field}
-                        value={formData[field.key]}
-                        onChange={(value) => onFieldChange(field.key, value)}
-                        error={errors[field.key]}
-                      />
-                    </Grid>
-                  );
-                })}
+                    return (
+                      <Grid
+                        item
+                        xs={12 / columnConfig.slotsPerRow}
+                        key={slotIndex}
+                      >
+                        <PreviewField
+                          field={field}
+                          value={formData[field.key]}
+                          onChange={(value) => onFieldChange(field.key, value)}
+                          error={errors[field.key]}
+                        />
+                      </Grid>
+                    );
+                  }
+                )}
               </Grid>
             ))}
           </Box>
@@ -211,19 +235,19 @@ export function FormPreview({ schema }: FormPreviewProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleFieldChange = (fieldKey: string, value: any) => {
-    setFormData(prev => ({ ...prev, [fieldKey]: value }));
+    setFormData((prev) => ({ ...prev, [fieldKey]: value }));
     // Clear error when field is modified
     if (errors[fieldKey]) {
-      setErrors(prev => ({ ...prev, [fieldKey]: '' }));
+      setErrors((prev) => ({ ...prev, [fieldKey]: '' }));
     }
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    schema.fields.forEach(field => {
+    schema.fields.forEach((field) => {
       const value = formData[field.key];
-      
+
       if (field.validation.required) {
         if (!value || (typeof value === 'string' && value.trim() === '')) {
           newErrors[field.key] = 'This field is required';
@@ -238,7 +262,10 @@ export function FormPreview({ schema }: FormPreviewProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      alert('Form submitted successfully!\\n\\nData: ' + JSON.stringify(formData, null, 2));
+      alert(
+        'Form submitted successfully!\\n\\nData: ' +
+          JSON.stringify(formData, null, 2)
+      );
     }
   };
 
@@ -294,15 +321,16 @@ export default function PreviewPanel({ schema }: PreviewPanelProps) {
           Form Preview
         </Typography>
         <Divider sx={{ mb: 2 }} />
-        <Alert severity="info">
-          No form schema provided for preview
-        </Alert>
+        <Alert severity="info">No form schema provided for preview</Alert>
       </Paper>
     );
   }
 
   return (
-    <Paper elevation={1} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Paper
+      elevation={1}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" gutterBottom>
           {schema.metadata.name} - Preview

@@ -1,14 +1,19 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+} from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  BuilderState, 
-  FormSchema, 
-  FormField, 
-  FieldType, 
+import {
+  BuilderState,
+  FormSchema,
+  FormField,
+  FieldType,
   LayoutType,
-  FieldPosition 
+  FieldPosition,
 } from '@/lib/schema';
 import { createLayoutConfig, findNextPosition } from '@/lib/layout';
 
@@ -18,10 +23,22 @@ type BuilderAction =
   | { type: 'SET_LAYOUT'; payload: LayoutType }
   | { type: 'ADD_FIELD'; payload: { fieldType: FieldType; columnId?: string } }
   | { type: 'REMOVE_FIELD'; payload: string }
-  | { type: 'MOVE_FIELD'; payload: { fieldId: string; position: FieldPosition } }
+  | {
+      type: 'MOVE_FIELD';
+      payload: { fieldId: string; position: FieldPosition };
+    }
   | { type: 'SELECT_FIELD'; payload: string | null }
-  | { type: 'UPDATE_FIELD_PROPS'; payload: { fieldId: string; props: Partial<FormField['props']> } }
-  | { type: 'UPDATE_FIELD_VALIDATION'; payload: { fieldId: string; validation: Partial<FormField['validation']> } }
+  | {
+      type: 'UPDATE_FIELD_PROPS';
+      payload: { fieldId: string; props: Partial<FormField['props']> };
+    }
+  | {
+      type: 'UPDATE_FIELD_VALIDATION';
+      payload: {
+        fieldId: string;
+        validation: Partial<FormField['validation']>;
+      };
+    }
   | { type: 'SET_DRAGGED_FIELD'; payload: string | null }
   | { type: 'UPDATE_FORM_METADATA'; payload: Partial<FormSchema['metadata']> };
 
@@ -29,7 +46,7 @@ type BuilderAction =
 function createInitialState(): BuilderState {
   const schemaId = uuidv4();
   const now = new Date().toISOString();
-  
+
   return {
     schema: {
       metadata: {
@@ -50,7 +67,10 @@ function createInitialState(): BuilderState {
 }
 
 // Reducer function
-function builderReducer(state: BuilderState, action: BuilderAction): BuilderState {
+function builderReducer(
+  state: BuilderState,
+  action: BuilderAction
+): BuilderState {
   switch (action.type) {
     case 'SET_SCHEMA':
       return {
@@ -77,12 +97,17 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     case 'ADD_FIELD': {
       const fieldId = uuidv4();
       const fieldKey = `field_${Date.now()}`;
-      
+
       // Find target column (first column if not specified)
-      const targetColumnId = action.payload.columnId || state.schema.layout.columns[0].id;
-      
+      const targetColumnId =
+        action.payload.columnId || state.schema.layout.columns[0].id;
+
       // Find next available position
-      const position = findNextPosition(targetColumnId, state.schema.layout, state.schema.positions);
+      const position = findNextPosition(
+        targetColumnId,
+        state.schema.layout,
+        state.schema.positions
+      );
       if (!position) {
         // No space available
         return state;
@@ -123,13 +148,16 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
         ...state,
         schema: {
           ...state.schema,
-          fields: state.schema.fields.filter(f => f.id !== fieldId),
+          fields: state.schema.fields.filter((f) => f.id !== fieldId),
           positions: Object.fromEntries(
-            Object.entries(state.schema.positions).filter(([id]) => id !== fieldId)
+            Object.entries(state.schema.positions).filter(
+              ([id]) => id !== fieldId
+            )
           ),
           updatedAt: new Date().toISOString(),
         },
-        selectedFieldId: state.selectedFieldId === fieldId ? null : state.selectedFieldId,
+        selectedFieldId:
+          state.selectedFieldId === fieldId ? null : state.selectedFieldId,
       };
     }
 
@@ -160,7 +188,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
         ...state,
         schema: {
           ...state.schema,
-          fields: state.schema.fields.map(field =>
+          fields: state.schema.fields.map((field) =>
             field.id === fieldId
               ? { ...field, props: { ...field.props, ...props } }
               : field
@@ -176,7 +204,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
         ...state,
         schema: {
           ...state.schema,
-          fields: state.schema.fields.map(field =>
+          fields: state.schema.fields.map((field) =>
             field.id === fieldId
               ? { ...field, validation: { ...field.validation, ...validation } }
               : field
@@ -221,8 +249,14 @@ interface BuilderContextType {
     removeField: (fieldId: string) => void;
     moveField: (fieldId: string, position: FieldPosition) => void;
     selectField: (fieldId: string | null) => void;
-    updateFieldProps: (fieldId: string, props: Partial<FormField['props']>) => void;
-    updateFieldValidation: (fieldId: string, validation: Partial<FormField['validation']>) => void;
+    updateFieldProps: (
+      fieldId: string,
+      props: Partial<FormField['props']>
+    ) => void;
+    updateFieldValidation: (
+      fieldId: string,
+      validation: Partial<FormField['validation']>
+    ) => void;
     setDraggedField: (fieldId: string | null) => void;
     updateFormMetadata: (metadata: Partial<FormSchema['metadata']>) => void;
   };
@@ -233,7 +267,11 @@ const BuilderContext = createContext<BuilderContextType | null>(null);
 
 // Provider component
 export function BuilderProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(builderReducer, undefined, createInitialState);
+  const [state, dispatch] = useReducer(
+    builderReducer,
+    undefined,
+    createInitialState
+  );
 
   const actions = {
     setSchema: useCallback((schema: FormSchema) => {
@@ -260,21 +298,33 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SELECT_FIELD', payload: fieldId });
     }, []),
 
-    updateFieldProps: useCallback((fieldId: string, props: Partial<FormField['props']>) => {
-      dispatch({ type: 'UPDATE_FIELD_PROPS', payload: { fieldId, props } });
-    }, []),
+    updateFieldProps: useCallback(
+      (fieldId: string, props: Partial<FormField['props']>) => {
+        dispatch({ type: 'UPDATE_FIELD_PROPS', payload: { fieldId, props } });
+      },
+      []
+    ),
 
-    updateFieldValidation: useCallback((fieldId: string, validation: Partial<FormField['validation']>) => {
-      dispatch({ type: 'UPDATE_FIELD_VALIDATION', payload: { fieldId, validation } });
-    }, []),
+    updateFieldValidation: useCallback(
+      (fieldId: string, validation: Partial<FormField['validation']>) => {
+        dispatch({
+          type: 'UPDATE_FIELD_VALIDATION',
+          payload: { fieldId, validation },
+        });
+      },
+      []
+    ),
 
     setDraggedField: useCallback((fieldId: string | null) => {
       dispatch({ type: 'SET_DRAGGED_FIELD', payload: fieldId });
     }, []),
 
-    updateFormMetadata: useCallback((metadata: Partial<FormSchema['metadata']>) => {
-      dispatch({ type: 'UPDATE_FORM_METADATA', payload: metadata });
-    }, []),
+    updateFormMetadata: useCallback(
+      (metadata: Partial<FormSchema['metadata']>) => {
+        dispatch({ type: 'UPDATE_FORM_METADATA', payload: metadata });
+      },
+      []
+    ),
   };
 
   return (

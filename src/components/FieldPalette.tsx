@@ -1,15 +1,15 @@
 'use client';
 
 import React from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
+import {
+  Box,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  ListItemIcon,
   ListItemText,
-  Divider 
+  Divider,
 } from '@mui/material';
 import { useDrag } from 'react-dnd';
 import { FIELD_REGISTRY } from '@/lib/field-registry';
@@ -23,17 +23,29 @@ interface DraggableFieldItemProps {
   icon: string;
 }
 
-function DraggableFieldItem({ fieldType, label, description, icon }: DraggableFieldItemProps) {
-  const [{ isDragging }, drag] = useDrag<FieldFromPaletteDragItem, void, { isDragging: boolean }>(() => ({
-    type: DND_ITEM_TYPES.FIELD_FROM_PALETTE,
-    item: {
+function DraggableFieldItem({
+  fieldType,
+  label,
+  description,
+  icon,
+}: DraggableFieldItemProps) {
+  const [{ isDragging }, drag] = useDrag<
+    FieldFromPaletteDragItem,
+    void,
+    { isDragging: boolean }
+  >(
+    () => ({
       type: DND_ITEM_TYPES.FIELD_FROM_PALETTE,
-      fieldType,
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
+      item: {
+        type: DND_ITEM_TYPES.FIELD_FROM_PALETTE,
+        fieldType,
+      },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
     }),
-  }), [fieldType]);
+    [fieldType]
+  );
 
   // Get the icon component dynamically
   const IconComponent = (Icons as any)[icon] || Icons.Help;
@@ -55,8 +67,8 @@ function DraggableFieldItem({ fieldType, label, description, icon }: DraggableFi
       <ListItemIcon>
         <IconComponent color="primary" />
       </ListItemIcon>
-      <ListItemText 
-        primary={label} 
+      <ListItemText
+        primary={label}
         secondary={description}
         secondaryTypographyProps={{ variant: 'caption' }}
       />
@@ -66,9 +78,9 @@ function DraggableFieldItem({ fieldType, label, description, icon }: DraggableFi
 
 export default function FieldPalette() {
   return (
-    <Paper 
+    <Paper
       elevation={1}
-      sx={{ 
+      sx={{
         width: 280,
         height: 'fit-content',
         maxHeight: '80vh',
@@ -83,9 +95,9 @@ export default function FieldPalette() {
           Drag fields to the canvas to build your form
         </Typography>
       </Box>
-      
+
       <Divider />
-      
+
       <List dense>
         {FIELD_REGISTRY.map((field) => (
           <DraggableFieldItem

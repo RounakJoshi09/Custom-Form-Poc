@@ -12,16 +12,18 @@ interface FormRenderPageProps {
 }
 
 // This is a server component that fetches the form data
-async function getFormData(id: string): Promise<{ schema?: FormSchema; error?: string }> {
+async function getFormData(
+  id: string
+): Promise<{ schema?: FormSchema; error?: string }> {
   try {
     // In a server component, we need to construct the full URL
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
       : 'http://localhost:3000';
-    
+
     const response = await fetch(`${baseUrl}/api/forms/${id}`, {
       // Important: Don't cache in development
-      cache: 'no-store'
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -47,9 +49,7 @@ export default async function FormRenderPage({ params }: FormRenderPageProps) {
             {error || 'Form not found'}
           </Alert>
           <Link href="/" style={{ textDecoration: 'none' }}>
-            <Button startIcon={<ArrowBack />}>
-              Back to Home
-            </Button>
+            <Button startIcon={<ArrowBack />}>Back to Home</Button>
           </Link>
         </Box>
       </Container>
@@ -70,21 +70,21 @@ export default async function FormRenderPage({ params }: FormRenderPageProps) {
             {schema.metadata.name}
           </Typography>
         </Box>
-        
+
         {schema.metadata.description && (
           <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
             {schema.metadata.description}
           </Typography>
         )}
-        
+
         <Typography variant="caption" color="text.secondary">
           Last updated: {new Date(schema.metadata.updatedAt).toLocaleString()}
         </Typography>
       </Box>
 
       {/* Form Content */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           backgroundColor: 'background.paper',
           border: '1px solid',
           borderColor: 'divider',
@@ -104,7 +104,10 @@ export async function generateMetadata({ params }: FormRenderPageProps) {
   const { schema } = await getFormData(id);
 
   return {
-    title: schema ? `${schema.metadata.name} | Custom Forms` : 'Form Not Found | Custom Forms',
-    description: schema?.metadata.description || 'Custom form built with the form builder',
+    title: schema
+      ? `${schema.metadata.name} | Custom Forms`
+      : 'Form Not Found | Custom Forms',
+    description:
+      schema?.metadata.description || 'Custom form built with the form builder',
   };
 }

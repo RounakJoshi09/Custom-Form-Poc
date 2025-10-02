@@ -2,7 +2,10 @@
 
 import React from 'react';
 import { Card, CardContent, Typography, IconButton, Box } from '@mui/material';
-import { Delete as DeleteIcon, Settings as SettingsIcon } from '@mui/icons-material';
+import {
+  Delete as DeleteIcon,
+  Settings as SettingsIcon,
+} from '@mui/icons-material';
 import { useDrag } from 'react-dnd';
 import { FormField } from '@/lib/schema';
 import { useBuilder } from '@/context/BuilderContext';
@@ -17,20 +20,27 @@ interface FieldCardProps {
 
 export default function FieldCard({ field, isSelected }: FieldCardProps) {
   const { actions } = useBuilder();
-  
-  const [{ isDragging }, drag] = useDrag<ExistingFieldDragItem, void, { isDragging: boolean }>(() => ({
-    type: DND_ITEM_TYPES.EXISTING_FIELD,
-    item: {
+
+  const [{ isDragging }, drag] = useDrag<
+    ExistingFieldDragItem,
+    void,
+    { isDragging: boolean }
+  >(
+    () => ({
       type: DND_ITEM_TYPES.EXISTING_FIELD,
-      fieldId: field.id,
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
+      item: {
+        type: DND_ITEM_TYPES.EXISTING_FIELD,
+        fieldId: field.id,
+      },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
     }),
-  }), [field.id]);
+    [field.id]
+  );
 
   const fieldDefinition = getFieldDefinition(field.type);
-  const IconComponent = fieldDefinition 
+  const IconComponent = fieldDefinition
     ? (Icons as any)[fieldDefinition.icon] || Icons.Help
     : Icons.Help;
 
@@ -67,8 +77,8 @@ export default function FieldCard({ field, isSelected }: FieldCardProps) {
           </Typography>
           {isSelected && (
             <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={handleDelete}
                 sx={{ p: 0.5 }}
                 color="error"
@@ -79,18 +89,18 @@ export default function FieldCard({ field, isSelected }: FieldCardProps) {
           )}
         </Box>
         {field.props.helperText && (
-          <Typography 
-            variant="caption" 
-            color="text.secondary" 
+          <Typography
+            variant="caption"
+            color="text.secondary"
             sx={{ mt: 0.5, display: 'block' }}
           >
             {field.props.helperText}
           </Typography>
         )}
         {field.validation.required && (
-          <Typography 
-            variant="caption" 
-            color="error" 
+          <Typography
+            variant="caption"
+            color="error"
             sx={{ mt: 0.5, display: 'block' }}
           >
             * Required

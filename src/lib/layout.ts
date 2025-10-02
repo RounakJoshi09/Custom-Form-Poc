@@ -1,4 +1,10 @@
-import { LayoutType, LayoutConfig, ColumnConfig, FormField, FieldPosition } from './schema';
+import {
+  LayoutType,
+  LayoutConfig,
+  ColumnConfig,
+  FormField,
+  FieldPosition,
+} from './schema';
 
 // Mapping of layout types to column configurations
 export const LAYOUT_CONFIGS: Record<LayoutType, ColumnConfig[]> = {
@@ -14,9 +20,7 @@ export const LAYOUT_CONFIGS: Record<LayoutType, ColumnConfig[]> = {
     { id: 'col-75', width: 75, slotsPerRow: 3, maxRows: 4 },
     { id: 'col-25', width: 25, slotsPerRow: 2, maxRows: 2 },
   ],
-  '100': [
-    { id: 'col-100', width: 100, slotsPerRow: 5, maxRows: 5 },
-  ],
+  '100': [{ id: 'col-100', width: 100, slotsPerRow: 5, maxRows: 5 }],
 };
 
 // Create layout configuration from type
@@ -69,7 +73,7 @@ export function getColumnConfig(
   layout: LayoutConfig,
   columnId: string
 ): ColumnConfig | undefined {
-  return layout.columns.find(col => col.id === columnId);
+  return layout.columns.find((col) => col.id === columnId);
 }
 
 // Find next available position in a column
@@ -86,17 +90,18 @@ export function findNextPosition(
     for (let slotIndex = 0; slotIndex < column.slotsPerRow; slotIndex++) {
       // Check if this position is occupied
       const isOccupied = Object.values(positions).some(
-        pos => pos.columnId === columnId && 
-               pos.rowIndex === rowIndex && 
-               pos.slotIndex === slotIndex
+        (pos) =>
+          pos.columnId === columnId &&
+          pos.rowIndex === rowIndex &&
+          pos.slotIndex === slotIndex
       );
-      
+
       if (!isOccupied) {
         return { columnId, rowIndex, slotIndex };
       }
     }
   }
-  
+
   return null; // No available positions
 }
 
@@ -107,18 +112,17 @@ export function isValidPosition(
 ): boolean {
   const column = getColumnConfig(layout, position.columnId);
   if (!column) return false;
-  
-  return position.rowIndex >= 0 && 
-         position.rowIndex < column.maxRows &&
-         position.slotIndex >= 0 && 
-         position.slotIndex < column.slotsPerRow;
+
+  return (
+    position.rowIndex >= 0 &&
+    position.rowIndex < column.maxRows &&
+    position.slotIndex >= 0 &&
+    position.slotIndex < column.slotsPerRow
+  );
 }
 
 // Chunk fields into rows for rendering
-export function chunkFieldsIntoRows<T>(
-  items: T[],
-  slotsPerRow: number
-): T[][] {
+export function chunkFieldsIntoRows<T>(items: T[], slotsPerRow: number): T[][] {
   const rows: T[][] = [];
   for (let i = 0; i < items.length; i += slotsPerRow) {
     rows.push(items.slice(i, i + slotsPerRow));

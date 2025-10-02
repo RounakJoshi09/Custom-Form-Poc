@@ -8,9 +8,5 @@ interface DnDProviderProps {
 }
 
 export default function DnDProvider({ children }: DnDProviderProps) {
-  return (
-    <DndProvider backend={HTML5Backend}>
-      {children}
-    </DndProvider>
-  );
+  return <DndProvider backend={HTML5Backend}>{children}</DndProvider>;
 }

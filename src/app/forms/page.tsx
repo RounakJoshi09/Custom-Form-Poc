@@ -1,19 +1,31 @@
-import { Container, Typography, Box, Alert, Button, Card, CardContent, Grid } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Box,
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+} from '@mui/material';
 import Link from 'next/link';
 import { Add as AddIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { SavedFormSummary } from '@/lib/persistence';
 
 // This is a server component that fetches the forms list
-async function getFormsData(): Promise<{ forms?: SavedFormSummary[]; error?: string }> {
+async function getFormsData(): Promise<{
+  forms?: SavedFormSummary[];
+  error?: string;
+}> {
   try {
     // In a server component, we need to construct the full URL
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
       : 'http://localhost:3000';
-    
+
     const response = await fetch(`${baseUrl}/api/forms`, {
       // Important: Don't cache in development
-      cache: 'no-store'
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -48,7 +60,14 @@ export default async function FormsListPage() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 4,
+        }}
+      >
         <Typography variant="h4" component="h1">
           Saved Forms
         </Typography>
@@ -78,15 +97,21 @@ export default async function FormsListPage() {
         <Grid container spacing={3}>
           {forms.map((form) => (
             <Grid item xs={12} sm={6} md={4} key={form.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" gutterBottom>
                     {form.name}
                   </Typography>
                   {form.description && (
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
                       sx={{ mb: 2 }}
                     >
                       {form.description}
@@ -97,10 +122,13 @@ export default async function FormsListPage() {
                   </Typography>
                 </CardContent>
                 <Box sx={{ p: 2, pt: 0 }}>
-                  <Link href={`/forms/${form.id}`} style={{ textDecoration: 'none' }}>
-                    <Button 
-                      variant="outlined" 
-                      fullWidth 
+                  <Link
+                    href={`/forms/${form.id}`}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Button
+                      variant="outlined"
+                      fullWidth
                       startIcon={<ViewIcon />}
                     >
                       View Form

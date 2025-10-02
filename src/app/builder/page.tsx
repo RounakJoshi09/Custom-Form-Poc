@@ -23,10 +23,13 @@ function BuilderContent() {
         <Grid item xs={12} md={3}>
           <FieldPalette />
         </Grid>
-        
+
         {/* Main Content Area */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={1} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Paper
+            elevation={1}
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+          >
             <Tabs value={currentTab} onChange={handleTabChange}>
               <Tab label="Canvas" />
               <Tab label="Preview" />
@@ -37,7 +40,7 @@ function BuilderContent() {
             </Box>
           </Paper>
         </Grid>
-        
+
         {/* Configuration Panel */}
         <Grid item xs={12} md={3}>
           <FieldConfigPanel />

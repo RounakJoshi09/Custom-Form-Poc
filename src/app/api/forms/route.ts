@@ -19,18 +19,18 @@ async function ensureFormsDir() {
 export async function GET() {
   try {
     await ensureFormsDir();
-    
+
     const files = await fs.readdir(FORMS_DIR);
-    const jsonFiles = files.filter(file => file.endsWith('.json'));
-    
+    const jsonFiles = files.filter((file) => file.endsWith('.json'));
+
     const forms: SavedFormSummary[] = [];
-    
+
     for (const file of jsonFiles) {
       try {
         const filePath = path.join(FORMS_DIR, file);
         const content = await fs.readFile(filePath, 'utf-8');
         const schema: FormSchema = JSON.parse(content);
-        
+
         forms.push({
           id: schema.metadata.id,
           name: schema.metadata.name,
@@ -42,14 +42,20 @@ export async function GET() {
         // Skip corrupted files
       }
     }
-    
+
     // Sort by updated date (newest first)
-    forms.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    
+    forms.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+
     return NextResponse.json(forms);
   } catch (error) {
     console.error('Error listing forms:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -57,27 +63,33 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     await ensureFormsDir();
-    
+
     const schema: FormSchema = await request.json();
-    
+
     // Validate required fields
     if (!schema.metadata?.id || !schema.metadata?.name) {
-      return NextResponse.json({ error: 'Invalid form schema' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid form schema' },
+        { status: 400 }
+      );
     }
-    
+
     const filePath = path.join(FORMS_DIR, `${schema.metadata.id}.json`);
-    
+
     // Check if form already exists
     try {
       await fs.access(filePath);
-      return NextResponse.json({ error: 'Form already exists' }, { status: 409 });
+      return NextResponse.json(
+        { error: 'Form already exists' },
+        { status: 409 }
+      );
     } catch {
       // File doesn't exist, which is what we want
     }
-    
+
     // Save the form
     await fs.writeFile(filePath, JSON.stringify(schema, null, 2));
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error saving form:', error);

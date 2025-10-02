@@ -23,7 +23,14 @@ export default function Home() {
         <Typography variant="body1" sx={{ mt: 2, mb: 4 }}>
           The form builder will be implemented step by step.
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
           <Link href="/builder" style={{ textDecoration: 'none' }}>
             <Button variant="contained" size="large">
               Open Form Builder

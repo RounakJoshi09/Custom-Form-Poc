@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Paper, 
-  Box, 
-  Typography, 
-  TextField, 
+import {
+  Paper,
+  Box,
+  Typography,
+  TextField,
   FormControlLabel,
   Checkbox,
   Divider,
   Button,
   Alert,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useBuilder } from '@/context/BuilderContext';
@@ -19,10 +19,14 @@ import { saveForm, updateForm } from '@/lib/persistence';
 
 export default function FieldConfigPanel() {
   const { state, actions } = useBuilder();
-  const [saveNotification, setSaveNotification] = useState({ open: false, message: '', type: 'success' as 'success' | 'error' });
-  
-  const selectedField = state.selectedFieldId 
-    ? state.schema.fields.find(f => f.id === state.selectedFieldId)
+  const [saveNotification, setSaveNotification] = useState({
+    open: false,
+    message: '',
+    type: 'success' as 'success' | 'error',
+  });
+
+  const selectedField = state.selectedFieldId
+    ? state.schema.fields.find((f) => f.id === state.selectedFieldId)
     : null;
 
   const handleFieldPropChange = (prop: string, value: string) => {
@@ -43,29 +47,49 @@ export default function FieldConfigPanel() {
     try {
       // Check if this is a new form or an update
       const isNewForm = state.schema.metadata.name === 'Untitled Form';
-      
+
       if (isNewForm) {
         const result = await saveForm(state.schema);
         if (result.success) {
-          setSaveNotification({ open: true, message: 'Form saved successfully!', type: 'success' });
+          setSaveNotification({
+            open: true,
+            message: 'Form saved successfully!',
+            type: 'success',
+          });
         } else {
-          setSaveNotification({ open: true, message: result.error || 'Failed to save form', type: 'error' });
+          setSaveNotification({
+            open: true,
+            message: result.error || 'Failed to save form',
+            type: 'error',
+          });
         }
       } else {
         const result = await updateForm(state.schema);
         if (result.success) {
-          setSaveNotification({ open: true, message: 'Form updated successfully!', type: 'success' });
+          setSaveNotification({
+            open: true,
+            message: 'Form updated successfully!',
+            type: 'success',
+          });
         } else {
-          setSaveNotification({ open: true, message: result.error || 'Failed to update form', type: 'error' });
+          setSaveNotification({
+            open: true,
+            message: result.error || 'Failed to update form',
+            type: 'error',
+          });
         }
       }
     } catch (error) {
-      setSaveNotification({ open: true, message: 'An error occurred while saving', type: 'error' });
+      setSaveNotification({
+        open: true,
+        message: 'An error occurred while saving',
+        type: 'error',
+      });
     }
   };
 
   const handleCloseNotification = () => {
-    setSaveNotification(prev => ({ ...prev, open: false }));
+    setSaveNotification((prev) => ({ ...prev, open: false }));
   };
 
   if (!selectedField) {
@@ -75,12 +99,12 @@ export default function FieldConfigPanel() {
           Configuration
         </Typography>
         <Divider sx={{ mb: 2 }} />
-        
+
         {/* Form-level configuration */}
         <Typography variant="subtitle2" gutterBottom>
           Form Settings
         </Typography>
-        
+
         <TextField
           fullWidth
           label="Form Name"
@@ -89,12 +113,14 @@ export default function FieldConfigPanel() {
           margin="normal"
           size="small"
         />
-        
+
         <TextField
           fullWidth
           label="Description"
           value={state.schema.metadata.description || ''}
-          onChange={(e) => handleFormMetadataChange('description', e.target.value)}
+          onChange={(e) =>
+            handleFormMetadataChange('description', e.target.value)
+          }
           margin="normal"
           size="small"
           multiline
@@ -124,7 +150,10 @@ export default function FieldConfigPanel() {
           autoHideDuration={6000}
           onClose={handleCloseNotification}
         >
-          <Alert onClose={handleCloseNotification} severity={saveNotification.type}>
+          <Alert
+            onClose={handleCloseNotification}
+            severity={saveNotification.type}
+          >
             {saveNotification.message}
           </Alert>
         </Snackbar>
@@ -133,7 +162,10 @@ export default function FieldConfigPanel() {
   }
 
   return (
-    <Paper elevation={1} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Paper
+      elevation={1}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" gutterBottom>
           Field Configuration
@@ -191,11 +223,15 @@ export default function FieldConfigPanel() {
               fullWidth
               label="Options (one per line)"
               value={
-                selectedField.props.options?.map(opt => opt.label).join('\n') || ''
+                selectedField.props.options
+                  ?.map((opt) => opt.label)
+                  .join('\n') || ''
               }
               onChange={(e) => {
-                const lines = e.target.value.split('\n').filter(line => line.trim());
-                const options = lines.map(line => ({
+                const lines = e.target.value
+                  .split('\n')
+                  .filter((line) => line.trim());
+                const options = lines.map((line) => ({
                   value: line.trim().toLowerCase().replace(/\s+/g, '_'),
                   label: line.trim(),
                 }));
@@ -226,12 +262,14 @@ export default function FieldConfigPanel() {
               placeholder="e.g., .pdf,.doc,.docx"
               helperText="Specify file extensions separated by commas"
             />
-            
+
             <FormControlLabel
               control={
                 <Checkbox
                   checked={selectedField.props.multiple || false}
-                  onChange={(e) => handleFieldPropChange('multiple', e.target.checked as any)}
+                  onChange={(e) =>
+                    handleFieldPropChange('multiple', e.target.checked as any)
+                  }
                 />
               }
               label="Allow multiple files"
@@ -250,7 +288,9 @@ export default function FieldConfigPanel() {
           control={
             <Checkbox
               checked={selectedField.validation.required || false}
-              onChange={(e) => handleValidationChange('required', e.target.checked)}
+              onChange={(e) =>
+                handleValidationChange('required', e.target.checked)
+              }
             />
           }
           label="Required field"
@@ -278,7 +318,10 @@ export default function FieldConfigPanel() {
         autoHideDuration={6000}
         onClose={handleCloseNotification}
       >
-        <Alert onClose={handleCloseNotification} severity={saveNotification.type}>
+        <Alert
+          onClose={handleCloseNotification}
+          severity={saveNotification.type}
+        >
           {saveNotification.message}
         </Alert>
       </Snackbar>

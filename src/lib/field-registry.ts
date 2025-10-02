@@ -52,6 +52,8 @@ export const FIELD_REGISTRY: FieldDefinition[] = [
   },
 ];
 
-export function getFieldDefinition(type: FieldType): FieldDefinition | undefined {
-  return FIELD_REGISTRY.find(def => def.type === type);
+export function getFieldDefinition(
+  type: FieldType
+): FieldDefinition | undefined {
+  return FIELD_REGISTRY.find((def) => def.type === type);
 }

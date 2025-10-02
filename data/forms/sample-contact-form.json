@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "id": "sample-contact-form",
+    "name": "Contact Us Form",
+    "description": "A simple contact form to collect customer inquiries",
+    "createdAt": "2025-01-02T12:00:00Z",
+    "updatedAt": "2025-01-02T12:00:00Z",
+    "version": 1
+  },
+  "layout": {
+    "type": "50-50",
+    "columns": [
+      {
+        "id": "col-50-1",
+        "width": 50,
+        "slotsPerRow": 2,
+        "maxRows": 3
+      },
+      {
+        "id": "col-50-2",
+        "width": 50,
+        "slotsPerRow": 2,
+        "maxRows": 3
+      }
+    ]
+  },
+  "fields": [
+    {
+      "id": "field-1",
+      "type": "text",
+      "key": "firstName",
+      "props": {
+        "label": "First Name",
+        "placeholder": "Enter your first name",
+        "helperText": ""
+      },
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "id": "field-2",
+      "type": "text",
+      "key": "lastName",
+      "props": {
+        "label": "Last Name",
+        "placeholder": "Enter your last name",
+        "helperText": ""
+      },
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "id": "field-3",
+      "type": "text",
+      "key": "email",
+      "props": {
+        "label": "Email Address",
+        "placeholder": "your.email@example.com",
+        "helperText": "We'll use this to respond to your inquiry"
+      },
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "id": "field-4",
+      "type": "select",
+      "key": "inquiryType",
+      "props": {
+        "label": "Inquiry Type",
+        "placeholder": "",
+        "helperText": "Select the nature of your inquiry",
+        "options": [
+          {
+            "value": "general",
+            "label": "General Question"
+          },
+          {
+            "value": "support",
+            "label": "Technical Support"
+          },
+          {
+            "value": "sales",
+            "label": "Sales Inquiry"
+          },
+          {
+            "value": "feedback",
+            "label": "Feedback"
+          }
+        ]
+      },
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "id": "field-5",
+      "type": "textarea",
+      "key": "message",
+      "props": {
+        "label": "Message",
+        "placeholder": "Please describe your inquiry in detail...",
+        "helperText": "Provide as much detail as possible to help us assist you"
+      },
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "id": "field-6",
+      "type": "checkbox",
+      "key": "newsletter",
+      "props": {
+        "label": "Subscribe to our newsletter for updates",
+        "placeholder": "",
+        "helperText": ""
+      },
+      "validation": {
+        "required": false
+      }
+    }
+  ],
+  "positions": {
+    "field-1": {
+      "columnId": "col-50-1",
+      "rowIndex": 0,
+      "slotIndex": 0
+    },
+    "field-2": {
+      "columnId": "col-50-1",
+      "rowIndex": 0,
+      "slotIndex": 1
+    },
+    "field-3": {
+      "columnId": "col-50-2",
+      "rowIndex": 0,
+      "slotIndex": 0
+    },
+    "field-4": {
+      "columnId": "col-50-2",
+      "rowIndex": 0,
+      "slotIndex": 1
+    },
+    "field-5": {
+      "columnId": "col-50-1",
+      "rowIndex": 1,
+      "slotIndex": 0
+    },
+    "field-6": {
+      "columnId": "col-50-2",
+      "rowIndex": 1,
+      "slotIndex": 0
+    }
+  }
+}
