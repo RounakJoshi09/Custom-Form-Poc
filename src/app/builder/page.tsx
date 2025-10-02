@@ -4,6 +4,7 @@ import React from 'react';
 import { Container, Box, Grid } from '@mui/material';
 import { BuilderProvider } from '@/context/BuilderContext';
 import FieldPalette from '@/components/FieldPalette';
+import Canvas from '@/components/Canvas';
 
 export default function BuilderPage() {
   return (
@@ -17,19 +18,7 @@ export default function BuilderPage() {
           
           {/* Canvas Area */}
           <Grid item xs={12} md={6}>
-            <Box 
-              sx={{ 
-                height: '100%', 
-                border: '2px dashed #ccc', 
-                borderRadius: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'grey.50'
-              }}
-            >
-              Canvas (Coming Soon)
-            </Box>
+            <Canvas />
           </Grid>
           
           {/* Configuration Panel */}
