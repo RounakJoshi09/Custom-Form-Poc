@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeRegistry from '@/lib/theme';
+import DnDProvider from '@/lib/dnd-provider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable}`}
       >
         <ThemeRegistry>
-          {children}
+          <DnDProvider>
+            {children}
+          </DnDProvider>
         </ThemeRegistry>
       </body>
     </html>
