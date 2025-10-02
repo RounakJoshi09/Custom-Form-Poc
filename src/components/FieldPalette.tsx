@@ -81,9 +81,9 @@ export default function FieldPalette() {
     <Paper
       elevation={1}
       sx={{
-        width: 280,
-        height: 'fit-content',
-        maxHeight: '80vh',
+        width: '100%',
+        height: '100%',
+        maxHeight: '100%',
         overflow: 'auto',
       }}
     >
