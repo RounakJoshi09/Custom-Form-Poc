@@ -5,6 +5,7 @@ import { Container, Box, Grid } from '@mui/material';
 import { BuilderProvider } from '@/context/BuilderContext';
 import FieldPalette from '@/components/FieldPalette';
 import Canvas from '@/components/Canvas';
+import FieldConfigPanel from '@/components/FieldConfigPanel';
 
 export default function BuilderPage() {
   return (
@@ -23,17 +24,7 @@ export default function BuilderPage() {
           
           {/* Configuration Panel */}
           <Grid item xs={12} md={3}>
-            <Box 
-              sx={{ 
-                height: '100%', 
-                border: '1px solid #ddd', 
-                borderRadius: 1,
-                p: 2,
-                backgroundColor: 'background.paper'
-              }}
-            >
-              Configuration Panel (Coming Soon)
-            </Box>
+            <FieldConfigPanel />
           </Grid>
         </Grid>
       </Container>
