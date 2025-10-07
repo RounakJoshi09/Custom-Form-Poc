@@ -128,3 +128,91 @@ export function chunkFieldsIntoRows<T>(items: T[], slotsPerRow: number): T[][] {
   }
   return rows;
 }
+
+// Get maximum number of rows across all columns in the layout
+// Auto-expands to ensure there are always empty rows available for dropping
+export function getMaxRowsInLayout(
+  positions: Record<string, FieldPosition>,
+  minEmptyRows: number = 3
+): number {
+  const maxUsedRow = Object.values(positions).reduce((max, pos) => {
+    return Math.max(max, pos.rowIndex);
+  }, -1);
+  
+  // Calculate the minimum rows needed
+  const minRowsNeeded = Math.max(5, maxUsedRow + 1 + minEmptyRows);
+  
+  return minRowsNeeded;
+}
+
+// Check if a specific position is occupied by a field
+export function isPositionOccupied(
+  position: FieldPosition,
+  positions: Record<string, FieldPosition>
+): boolean {
+  return Object.values(positions).some(
+    (pos) =>
+      pos.columnId === position.columnId &&
+      pos.rowIndex === position.rowIndex &&
+      pos.slotIndex === position.slotIndex
+  );
+}
+
+// Get the field ID at a specific position, if one exists
+export function getFieldAtPosition(
+  position: FieldPosition,
+  positions: Record<string, FieldPosition>
+): string | null {
+  for (const [fieldId, pos] of Object.entries(positions)) {
+    if (
+      pos.columnId === position.columnId &&
+      pos.rowIndex === position.rowIndex &&
+      pos.slotIndex === position.slotIndex
+    ) {
+      return fieldId;
+    }
+  }
+  return null;
+}
+
+// Check how many empty rows are available at the bottom of the layout
+export function getEmptyRowsCount(
+  positions: Record<string, FieldPosition>,
+  layout: LayoutConfig,
+  maxRows: number
+): number {
+  const maxUsedRow = Object.values(positions).reduce((max, pos) => {
+    return Math.max(max, pos.rowIndex);
+  }, -1);
+  
+  return Math.max(0, maxRows - maxUsedRow - 1);
+}
+
+// Check if a specific row is completely empty across all columns
+export function isRowEmpty(
+  rowIndex: number,
+  positions: Record<string, FieldPosition>
+): boolean {
+  return !Object.values(positions).some(pos => pos.rowIndex === rowIndex);
+}
+
+// Get layout statistics for better row management
+export function getLayoutStats(
+  positions: Record<string, FieldPosition>,
+  layout: LayoutConfig
+) {
+  const maxUsedRow = Object.values(positions).reduce((max, pos) => {
+    return Math.max(max, pos.rowIndex);
+  }, -1);
+  
+  const totalSlots = layout.columns.reduce((total, col) => total + col.slotsPerRow, 0);
+  const usedSlots = Object.keys(positions).length;
+  const utilization = usedSlots > 0 ? (usedSlots / ((maxUsedRow + 1) * totalSlots)) * 100 : 0;
+  
+  return {
+    maxUsedRow,
+    totalFields: usedSlots,
+    utilization: Math.round(utilization),
+    recommendedRows: Math.max(5, maxUsedRow + 4) // Always keep 3+ empty rows
+  };
+}

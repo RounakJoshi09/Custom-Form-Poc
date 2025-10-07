@@ -15,13 +15,13 @@ import {
   LayoutType,
   FieldPosition,
 } from '@/lib/schema';
-import { createLayoutConfig, findNextPosition } from '@/lib/layout';
+import { createLayoutConfig, findNextPosition, isPositionOccupied } from '@/lib/layout';
 
 // Action types
 type BuilderAction =
   | { type: 'SET_SCHEMA'; payload: FormSchema }
   | { type: 'SET_LAYOUT'; payload: LayoutType }
-  | { type: 'ADD_FIELD'; payload: { fieldType: FieldType; columnId?: string } }
+  | { type: 'ADD_FIELD'; payload: { fieldType: FieldType; columnId?: string; position?: FieldPosition } }
   | { type: 'REMOVE_FIELD'; payload: string }
   | {
       type: 'MOVE_FIELD';
@@ -98,19 +98,43 @@ function builderReducer(
       const fieldId = uuidv4();
       const fieldKey = `field_${Date.now()}`;
 
-      // Find target column (first column if not specified)
-      const targetColumnId =
-        action.payload.columnId || state.schema.layout.columns[0].id;
+      let position: FieldPosition;
 
-      // Find next available position
-      const position = findNextPosition(
-        targetColumnId,
-        state.schema.layout,
-        state.schema.positions
-      );
-      if (!position) {
-        // No space available
-        return state;
+      if (action.payload.position) {
+        // Use specific position if provided
+        position = action.payload.position;
+        
+        // For new fields, check if position is occupied
+        const isOccupied = isPositionOccupied(position, state.schema.positions);
+        if (isOccupied) {
+          // Position is occupied, find next available position in the same column
+          const nextPosition = findNextPosition(
+            position.columnId,
+            state.schema.layout,
+            state.schema.positions
+          );
+          if (!nextPosition) {
+            // No space available in this column
+            return state;
+          }
+          position = nextPosition;
+        }
+      } else {
+        // Find target column (first column if not specified)
+        const targetColumnId =
+          action.payload.columnId || state.schema.layout.columns[0].id;
+
+        // Find next available position
+        const nextPosition = findNextPosition(
+          targetColumnId,
+          state.schema.layout,
+          state.schema.positions
+        );
+        if (!nextPosition) {
+          // No space available
+          return state;
+        }
+        position = nextPosition;
       }
 
       const newField: FormField = {
@@ -163,14 +187,36 @@ function builderReducer(
 
     case 'MOVE_FIELD': {
       const { fieldId, position } = action.payload;
+      const currentPositions = state.schema.positions;
+      
+      // Check if target position is occupied by another field
+      const fieldAtTargetPosition = Object.entries(currentPositions).find(
+        ([otherFieldId, pos]: [string, FieldPosition]) =>
+          otherFieldId !== fieldId &&
+          pos.columnId === position.columnId &&
+          pos.rowIndex === position.rowIndex &&
+          pos.slotIndex === position.slotIndex
+      );
+      
+      let newPositions = { ...currentPositions };
+      
+      if (fieldAtTargetPosition) {
+        // If position is occupied, swap the fields
+        const [occupyingFieldId] = fieldAtTargetPosition;
+        const currentFieldPosition = currentPositions[fieldId];
+        
+        newPositions[fieldId] = position;
+        newPositions[occupyingFieldId] = currentFieldPosition;
+      } else {
+        // Target position is free, simply move the field
+        newPositions[fieldId] = position;
+      }
+      
       return {
         ...state,
         schema: {
           ...state.schema,
-          positions: {
-            ...state.schema.positions,
-            [fieldId]: position,
-          },
+          positions: newPositions,
           updatedAt: new Date().toISOString(),
         },
       };
@@ -245,7 +291,7 @@ interface BuilderContextType {
   actions: {
     setSchema: (schema: FormSchema) => void;
     setLayout: (layout: LayoutType) => void;
-    addField: (fieldType: FieldType, columnId?: string) => void;
+    addField: (fieldType: FieldType, columnId?: string, position?: FieldPosition) => void;
     removeField: (fieldId: string) => void;
     moveField: (fieldId: string, position: FieldPosition) => void;
     selectField: (fieldId: string | null) => void;
@@ -282,8 +328,8 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_LAYOUT', payload: layout });
     }, []),
 
-    addField: useCallback((fieldType: FieldType, columnId?: string) => {
-      dispatch({ type: 'ADD_FIELD', payload: { fieldType, columnId } });
+    addField: useCallback((fieldType: FieldType, columnId?: string, position?: FieldPosition) => {
+      dispatch({ type: 'ADD_FIELD', payload: { fieldType, columnId, position } });
     }, []),
 
     removeField: useCallback((fieldId: string) => {

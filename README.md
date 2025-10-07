@@ -4,9 +4,11 @@ A production-ready dynamic form builder built with Next.js, TypeScript, and Mate
 
 ## 🚀 Features
 
-- **Drag & Drop Form Builder**: Intuitive interface for building forms
+- **Free-form Drag & Drop Form Builder**: Intuitive interface with auto-expanding grid - drop fields anywhere
 - **Multiple Field Types**: Text, Textarea, Select, Date, DateTime, Checkbox, File Upload
 - **Flexible Layouts**: Support for 25-75, 50-50, 75-25, and 100% column layouts
+- **Auto-expanding Grid**: Dynamic row management that grows as you add more fields
+- **Manual Row Controls**: Optional grid management with statistics and manual row adjustment
 - **Real-time Preview**: See how your form looks while building
 - **Form Persistence**: Save and load forms using filesystem storage
 - **Responsive Design**: Works on desktop and mobile devices
@@ -47,11 +49,14 @@ A production-ready dynamic form builder built with Next.js, TypeScript, and Mate
 ### Creating a Form
 
 1. Navigate to `/builder` or click "Open Form Builder" on the homepage
-2. Drag field components from the right panel to the canvas
-3. Configure field properties in the configuration panel
-4. Switch between different layout options (25-75, 50-50, 75-25, 100%)
-5. Preview your form by clicking the "Preview" tab
-6. Save your form using the "Save Form" button
+2. Drag field components from the right panel to any specific grid cell in the canvas
+3. Drop fields anywhere in the layout - the grid automatically expands as needed
+4. Move existing fields by dragging them to new positions (fields will swap if target is occupied)
+5. Use the "Grid Management" panel to view statistics or manually adjust row count
+6. Configure field properties in the configuration panel
+6. Switch between different layout options (25-75, 50-50, 75-25, 100%)
+7. Preview your form by clicking the "Preview" tab
+8. Save your form using the "Save Form" button
 
 ### Viewing Forms
 
