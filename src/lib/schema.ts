@@ -5,6 +5,7 @@ export type FieldType =
   | 'select'
   | 'date'
   | 'datetime'
+  | 'radio'
   | 'checkbox'
   | 'file';
 

@@ -12,6 +12,8 @@ import Link from 'next/link';
 import { Add as AddIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { SavedFormSummary } from '@/lib/persistence';
 
+const GridItem = Grid as unknown as React.ComponentType<any>;
+
 // This is a server component that fetches the forms list
 async function getFormsData(): Promise<{
   forms?: SavedFormSummary[];
@@ -96,7 +98,7 @@ export default async function FormsListPage() {
       ) : (
         <Grid container spacing={3}>
           {forms.map((form) => (
-            <Grid item xs={12} sm={6} md={4} key={form.id}>
+            <GridItem xs={12} sm={6} md={4} key={form.id}>
               <Card
                 sx={{
                   height: '100%',
@@ -136,7 +138,7 @@ export default async function FormsListPage() {
                   </Link>
                 </Box>
               </Card>
-            </Grid>
+            </GridItem>
           ))}
         </Grid>
       )}

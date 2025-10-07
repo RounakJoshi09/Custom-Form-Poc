@@ -37,7 +37,7 @@ export default function FieldConfigPanel() {
       setOptionsText('');
       return;
     }
-    if (selectedField.type === 'select') {
+    if (selectedField.type === 'select' || selectedField.type === 'radio') {
       const text =
         selectedField.props.options?.map((opt) => opt.label).join('\n') || '';
       setOptionsText(text);
@@ -230,11 +230,11 @@ export default function FieldConfigPanel() {
           rows={2}
         />
 
-        {/* Select field options */}
-        {selectedField.type === 'select' && (
+        {/* Select/Radio field options */}
+        {(selectedField.type === 'select' || selectedField.type === 'radio') && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Select Options
+              Options
             </Typography>
             <TextField
               fullWidth

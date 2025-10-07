@@ -39,6 +39,12 @@ export const FIELD_REGISTRY: FieldDefinition[] = [
     icon: 'AccessTime',
   },
   {
+    type: 'radio',
+    label: 'Radio Buttons',
+    description: 'Single-choice options',
+    icon: 'RadioButtonChecked',
+  },
+  {
     type: 'checkbox',
     label: 'Checkbox',
     description: 'Checkbox input field',

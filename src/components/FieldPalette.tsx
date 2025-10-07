@@ -52,7 +52,10 @@ function DraggableFieldItem({
 
   return (
     <ListItem
-      ref={drag}
+      ref={(node) => {
+        // react-dnd's drag connector can return a ReactElement, ensure this ref callback returns void
+        drag(node as any);
+      }}
       sx={{
         cursor: 'grab',
         opacity: isDragging ? 0.5 : 1,

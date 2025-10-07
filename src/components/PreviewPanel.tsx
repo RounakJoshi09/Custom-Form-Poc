@@ -10,6 +10,8 @@ import {
   MenuItem,
   FormControlLabel,
   Checkbox,
+  Radio,
+  RadioGroup,
   Button,
   Divider,
   Alert,
@@ -61,22 +63,28 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
         />
       );
 
-    case 'select':
+    case 'select': {
+      const options = field.props.options ?? [];
       return (
         <TextField
           {...commonProps}
           select
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
+          SelectProps={{ displayEmpty: true }}
           sx={{ width: '100%', minWidth: 280, display: 'block' }}
         >
-          {field.props.options?.map((option) => (
+          <MenuItem value="" disabled={Boolean(field.validation.required)}>
+            {field.props.placeholder || 'Select an option'}
+          </MenuItem>
+          {options.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
             </MenuItem>
           ))}
         </TextField>
       );
+    }
 
     case 'date':
       return (
@@ -113,6 +121,55 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
           sx={{ mt: 2, mb: 1 }}
         />
       );
+
+    case 'radio': {
+      const options = field.props.options ?? [];
+      return (
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            {field.props.label}
+          </Typography>
+          <RadioGroup
+            value={value ?? ''}
+            onChange={(e) => onChange((e.target as HTMLInputElement).value)}
+          >
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {options.length > 0 ? (
+                options.map((option) => (
+                  <Box key={option.value} sx={{ flex: '0 0 50%' }}>
+                    <FormControlLabel
+                      value={option.value}
+                      control={<Radio />}
+                      label={option.label}
+                      sx={{
+                        alignItems: 'flex-start',
+                        '.MuiFormControlLabel-label': {
+                          whiteSpace: 'normal',
+                          overflowWrap: 'anywhere',
+                        },
+                      }}
+                    />
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="caption" color="text.secondary">
+                  No options configured
+                </Typography>
+              )}
+            </Box>
+          </RadioGroup>
+          {(error || field.props.helperText) && (
+            <Typography
+              variant="caption"
+              color={error ? 'error' : 'text.secondary'}
+              sx={{ mt: 0.5 }}
+            >
+              {error || field.props.helperText}
+            </Typography>
+          )}
+        </Box>
+      );
+    }
 
     case 'file':
       return (
