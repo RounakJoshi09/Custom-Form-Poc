@@ -12,10 +12,16 @@ import {
   Checkbox,
   Radio,
   RadioGroup,
+  FormControl,
+  FormLabel,
+  FormHelperText,
   Button,
   Divider,
   Alert,
   Grid,
+  OutlinedInput,
+  InputLabel,
+  Select,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
 import { getColumnFields, getColumnConfig } from '@/lib/layout';
@@ -30,6 +36,9 @@ interface PreviewFieldProps {
 }
 
 function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
+  // Track open state for select to control label shrink/notch like a text field
+  const [selectOpen, setSelectOpen] = useState(false);
+
   const commonProps = {
     fullWidth: true,
     label: field.props.label,
@@ -65,24 +74,45 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
 
     case 'select': {
       const options = field.props.options ?? [];
+      const isFilled = Boolean(value);
       return (
-        <TextField
-          {...commonProps}
-          select
-          value={value ?? ''}
-          onChange={(e) => onChange(e.target.value)}
-          SelectProps={{ displayEmpty: true }}
-          sx={{ width: '100%', minWidth: 280, display: 'block' }}
-        >
-          <MenuItem value="" disabled={Boolean(field.validation.required)}>
-            {field.props.placeholder || 'Select an option'}
-          </MenuItem>
-          {options.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
+        <FormControl fullWidth size="small" margin="normal" error={Boolean(error)}>
+          <InputLabel shrink={selectOpen || isFilled}>{field.props.label}</InputLabel>
+          <Select
+            value={value ?? ''}
+            onChange={(e) => onChange(e.target.value)}
+            onOpen={() => setSelectOpen(true)}
+            onClose={() => setSelectOpen(false)}
+            renderValue={(selected) => {
+              if (selected === '' || selected === undefined || selected === null) {
+                return '';
+              }
+              const found = options.find((o) => o.value === selected);
+              return found ? found.label : String(selected);
+            }}
+            input={
+              <OutlinedInput
+                label={field.props.label}
+                notched={selectOpen || isFilled}
+              />
+            }
+            sx={{ width: '100%', minWidth: 280, display: 'block' }}
+          >
+            <MenuItem value="" disabled={Boolean(field.validation.required)}>
+              {field.props.placeholder || 'Select an option'}
             </MenuItem>
-          ))}
-        </TextField>
+            {options.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+          {(error || field.props.helperText) && (
+            <FormHelperText error={Boolean(error)}>
+              {error || field.props.helperText}
+            </FormHelperText>
+          )}
+        </FormControl>
       );
     }
 
@@ -125,49 +155,48 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
     case 'radio': {
       const options = field.props.options ?? [];
       return (
-        <Box sx={{ mt: 1 }}>
-          <Typography variant="body2" sx={{ mb: 0.5 }}>
+        <FormControl component="fieldset" error={Boolean(error)} sx={{ width: '100%', mt: 1 }}>
+          <FormLabel component="legend" sx={{ typography: 'body1', mb: 0.5 }}>
             {field.props.label}
-          </Typography>
+          </FormLabel>
           <RadioGroup
+            row
             value={value ?? ''}
             onChange={(e) => onChange((e.target as HTMLInputElement).value)}
+            sx={{ flexWrap: 'wrap', alignItems: 'center', width: '10rem' }}
           >
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {options.length > 0 ? (
-                options.map((option) => (
-                  <Box key={option.value} sx={{ flex: '0 0 50%' }}>
-                    <FormControlLabel
-                      value={option.value}
-                      control={<Radio />}
-                      label={option.label}
-                      sx={{
-                        alignItems: 'flex-start',
-                        '.MuiFormControlLabel-label': {
-                          whiteSpace: 'normal',
-                          overflowWrap: 'anywhere',
-                        },
-                      }}
-                    />
-                  </Box>
-                ))
-              ) : (
-                <Typography variant="caption" color="text.secondary">
-                  No options configured
-                </Typography>
-              )}
-            </Box>
+            {options.length > 0 ? (
+              options.map((option) => (
+                <FormControlLabel
+                  key={option.value}
+                  value={option.value}
+                  control={<Radio />}
+                  label={option.label}
+                  sx={{
+                    flex: '0 0 50%',
+                    display: 'flex',
+                    m: 0,
+                    alignItems: 'center',
+                    '.MuiFormControlLabel-label': {
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word',
+                      lineHeight: 1.5,
+                    },
+                  }}
+                />
+              ))
+            ) : (
+              <Typography variant="caption" color="text.secondary">
+                No options configured
+              </Typography>
+            )}
           </RadioGroup>
           {(error || field.props.helperText) && (
-            <Typography
-              variant="caption"
-              color={error ? 'error' : 'text.secondary'}
-              sx={{ mt: 0.5 }}
-            >
+            <FormHelperText error={Boolean(error)} sx={{ mt: 0.5 }}>
               {error || field.props.helperText}
-            </Typography>
+            </FormHelperText>
           )}
-        </Box>
+        </FormControl>
       );
     }
 
