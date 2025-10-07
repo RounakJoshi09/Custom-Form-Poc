@@ -70,6 +70,7 @@ export interface FormSchema {
     updatedAt: string;
     version: number;
   };
+  updatedAt?: string;
   layout: LayoutConfig;
   fields: FormField[];
   positions: Record<string, FieldPosition>; // fieldId -> position

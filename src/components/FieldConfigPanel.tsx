@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Paper,
   Box,
@@ -29,7 +29,24 @@ export default function FieldConfigPanel() {
     ? state.schema.fields.find((f) => f.id === state.selectedFieldId)
     : null;
 
-  const handleFieldPropChange = (prop: string, value: string) => {
+  // Local state for editing select options as raw multiline text.
+  const [optionsText, setOptionsText] = useState('');
+
+  useEffect(() => {
+    if (!selectedField) {
+      setOptionsText('');
+      return;
+    }
+    if (selectedField.type === 'select') {
+      const text =
+        selectedField.props.options?.map((opt) => opt.label).join('\n') || '';
+      setOptionsText(text);
+    } else {
+      setOptionsText('');
+    }
+  }, [selectedField?.id]);
+
+  const handleFieldPropChange = (prop: string, value: any) => {
     if (!selectedField) return;
     actions.updateFieldProps(selectedField.id, { [prop]: value });
   };
@@ -222,18 +239,17 @@ export default function FieldConfigPanel() {
             <TextField
               fullWidth
               label="Options (one per line)"
-              value={
-                selectedField.props.options
-                  ?.map((opt) => opt.label)
-                  .join('\n') || ''
-              }
+              value={optionsText}
               onChange={(e) => {
-                const lines = e.target.value
-                  .split('\n')
-                  .filter((line) => line.trim());
+                const raw = e.target.value;
+                setOptionsText(raw);
+                const lines = raw
+                  .split(/\r?\n/)
+                  .map((line) => line.trim())
+                  .filter(Boolean);
                 const options = lines.map((line) => ({
-                  value: line.trim().toLowerCase().replace(/\s+/g, '_'),
-                  label: line.trim(),
+                  value: line.toLowerCase().replace(/\s+/g, '_'),
+                  label: line,
                 }));
                 handleFieldPropChange('options', options as any);
               }}

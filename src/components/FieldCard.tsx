@@ -41,10 +41,12 @@ export default function FieldCard({ field, isSelected }: FieldCardProps) {
 
   const fieldDefinition = getFieldDefinition(field.type);
   const IconComponent = fieldDefinition
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? (Icons as any)[fieldDefinition.icon] || Icons.Help
     : Icons.Help;
 
-  const handleSelect = () => {
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
     actions.selectField(field.id);
   };
 
@@ -55,7 +57,8 @@ export default function FieldCard({ field, isSelected }: FieldCardProps) {
 
   return (
     <Card
-      ref={drag}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ref={drag as any}
       onClick={handleSelect}
       sx={{
         cursor: 'move',

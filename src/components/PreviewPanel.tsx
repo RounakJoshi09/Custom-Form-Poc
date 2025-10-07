@@ -63,20 +63,19 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
 
     case 'select':
       return (
-        <FormControl {...commonProps}>
-          <InputLabel>{field.props.label}</InputLabel>
-          <Select
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            label={field.props.label}
-          >
-            {field.props.options?.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <TextField
+          {...commonProps}
+          select
+          value={value ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          sx={{ width: '100%', minWidth: 280, display: 'block' }}
+        >
+          {field.props.options?.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
       );
 
     case 'date':

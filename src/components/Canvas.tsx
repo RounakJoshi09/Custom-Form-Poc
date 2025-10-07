@@ -45,7 +45,9 @@ function DropZone({ columnId, children }: DropZoneProps) {
 
   return (
     <Box
-      ref={drop}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ref={drop as any}
+      onClick={() => actions.selectField(null)}
       sx={{
         minHeight: '60vh',
         p: 1,
