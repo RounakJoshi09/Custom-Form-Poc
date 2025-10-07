@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState } from 'react';
@@ -6,10 +7,7 @@ import {
   Box,
   Typography,
   TextField,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   FormControlLabel,
   Checkbox,
   Button,
@@ -19,6 +17,8 @@ import {
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
 import { getColumnFields, getColumnConfig } from '@/lib/layout';
+
+const GridItem = Grid as unknown as React.ComponentType<any>;
 
 interface PreviewFieldProps {
   field: FormField;
@@ -164,9 +164,13 @@ function PreviewColumn({
 
   if (!columnConfig) return null;
 
+  const gridSize = Math.max(
+    1,
+    Math.min(12, Math.floor(12 / columnConfig.slotsPerRow))
+  );
+
   return (
-    <Grid
-      item
+    <GridItem
       xs={12}
       md={width === 25 ? 3 : width === 50 ? 6 : width === 75 ? 9 : 12}
     >
@@ -193,17 +197,15 @@ function PreviewColumn({
                     const field = row[slotIndex];
                     if (!field)
                       return (
-                        <Grid
-                          item
-                          xs={12 / columnConfig.slotsPerRow}
+                        <GridItem
+                          xs={gridSize}
                           key={slotIndex}
                         />
                       );
 
                     return (
-                      <Grid
-                        item
-                        xs={12 / columnConfig.slotsPerRow}
+                      <GridItem
+                        xs={gridSize}
                         key={slotIndex}
                       >
                         <PreviewField
@@ -212,7 +214,7 @@ function PreviewColumn({
                           onChange={(value) => onFieldChange(field.key, value)}
                           error={errors[field.key]}
                         />
-                      </Grid>
+                      </GridItem>
                     );
                   }
                 )}
@@ -221,7 +223,7 @@ function PreviewColumn({
           </Box>
         )}
       </Box>
-    </Grid>
+    </GridItem>
   );
 }
 
@@ -263,7 +265,7 @@ export function FormPreview({ schema }: FormPreviewProps) {
     if (validateForm()) {
       alert(
         'Form submitted successfully!\\n\\nData: ' +
-          JSON.stringify(formData, null, 2)
+        JSON.stringify(formData, null, 2)
       );
     }
   };

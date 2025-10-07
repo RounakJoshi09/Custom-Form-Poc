@@ -50,7 +50,6 @@ export interface ColumnConfig {
   id: string;
   width: number; // Percentage: 25, 50, 75, or 100
   slotsPerRow: number; // Max fields per sub-row
-  maxRows: number; // Max sub-rows in this column
 }
 
 // Position of a field within the layout

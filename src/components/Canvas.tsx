@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Paper,
   Box,
@@ -70,12 +70,25 @@ interface ColumnProps {
 
 function Column({ columnId, width }: ColumnProps) {
   const { state } = useBuilder();
+  const endOfColumnRef = useRef<HTMLDivElement | null>(null);
+  const prevRowCountRef = useRef<number>(0);
+
   const columnFields = getColumnFields(
     columnId,
     state.schema.fields,
     state.schema.positions
   );
   const columnConfig = getColumnConfig(state.schema.layout, columnId);
+
+  // Auto-scroll to newest row when a new row is created
+  useEffect(() => {
+    const currentRowCount = columnFields.length;
+    if (currentRowCount > prevRowCountRef.current) {
+      // New row added
+      endOfColumnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    prevRowCountRef.current = currentRowCount;
+  }, [columnFields.length]);
 
   if (!columnConfig) {
     return null;
@@ -89,8 +102,7 @@ function Column({ columnId, width }: ColumnProps) {
       >
         <Box sx={{ p: 1 }}>
           <Typography variant="caption" color="text.secondary" gutterBottom>
-            Column {width}% ({columnConfig.slotsPerRow} per row,{' '}
-            {columnConfig.maxRows} rows max)
+            Column {width}% ({columnConfig.slotsPerRow} per row)
           </Typography>
         </Box>
         <Divider />
@@ -153,6 +165,7 @@ function Column({ columnId, width }: ColumnProps) {
                   )}
                 </Box>
               ))}
+              <div ref={endOfColumnRef} />
             </Box>
           )}
         </DropZone>

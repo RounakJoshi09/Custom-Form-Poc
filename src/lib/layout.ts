@@ -9,18 +9,18 @@ import {
 // Mapping of layout types to column configurations
 export const LAYOUT_CONFIGS: Record<LayoutType, ColumnConfig[]> = {
   '25-75': [
-    { id: 'col-25', width: 25, slotsPerRow: 2, maxRows: 2 },
-    { id: 'col-75', width: 75, slotsPerRow: 3, maxRows: 4 },
+    { id: 'col-25', width: 25, slotsPerRow: 2 },
+    { id: 'col-75', width: 75, slotsPerRow: 3 },
   ],
   '50-50': [
-    { id: 'col-50-1', width: 50, slotsPerRow: 2, maxRows: 3 },
-    { id: 'col-50-2', width: 50, slotsPerRow: 2, maxRows: 3 },
+    { id: 'col-50-1', width: 50, slotsPerRow: 2 },
+    { id: 'col-50-2', width: 50, slotsPerRow: 2 },
   ],
   '75-25': [
-    { id: 'col-75', width: 75, slotsPerRow: 3, maxRows: 4 },
-    { id: 'col-25', width: 25, slotsPerRow: 2, maxRows: 2 },
+    { id: 'col-75', width: 75, slotsPerRow: 3 },
+    { id: 'col-25', width: 25, slotsPerRow: 2 },
   ],
-  '100': [{ id: 'col-100', width: 100, slotsPerRow: 5, maxRows: 5 }],
+  '100': [{ id: 'col-100', width: 100, slotsPerRow: 5 }],
 };
 
 // Create layout configuration from type
@@ -76,7 +76,7 @@ export function getColumnConfig(
   return layout.columns.find((col) => col.id === columnId);
 }
 
-// Find next available position in a column
+// Find next available position in a column (no max rows constraint)
 export function findNextPosition(
   columnId: string,
   layout: LayoutConfig,
@@ -85,24 +85,24 @@ export function findNextPosition(
   const column = getColumnConfig(layout, columnId);
   if (!column) return null;
 
-  // Check each row and slot
-  for (let rowIndex = 0; rowIndex < column.maxRows; rowIndex++) {
-    for (let slotIndex = 0; slotIndex < column.slotsPerRow; slotIndex++) {
-      // Check if this position is occupied
-      const isOccupied = Object.values(positions).some(
-        (pos) =>
-          pos.columnId === columnId &&
-          pos.rowIndex === rowIndex &&
-          pos.slotIndex === slotIndex
-      );
+  // Determine current maximum row index used in this column
+  const used = Object.values(positions).filter((p) => p.columnId === columnId);
+  const maxRowIndex = used.length > 0 ? Math.max(...used.map((p) => p.rowIndex)) : -1;
 
+  // First, scan existing rows for any free slot
+  for (let rowIndex = 0; rowIndex <= maxRowIndex; rowIndex++) {
+    for (let slotIndex = 0; slotIndex < column.slotsPerRow; slotIndex++) {
+      const isOccupied = used.some(
+        (pos) => pos.rowIndex === rowIndex && pos.slotIndex === slotIndex
+      );
       if (!isOccupied) {
         return { columnId, rowIndex, slotIndex };
       }
     }
   }
 
-  return null; // No available positions
+  // If all existing rows are full, start a new row at the next index
+  return { columnId, rowIndex: maxRowIndex + 1, slotIndex: 0 };
 }
 
 // Check if a position is valid for a column
@@ -115,7 +115,6 @@ export function isValidPosition(
 
   return (
     position.rowIndex >= 0 &&
-    position.rowIndex < column.maxRows &&
     position.slotIndex >= 0 &&
     position.slotIndex < column.slotsPerRow
   );
