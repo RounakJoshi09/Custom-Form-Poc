@@ -1,4 +1,4 @@
-import { FormSchema } from './schema';
+import { FormSchema, FormSubmission } from './schema';
 
 export interface SavedFormSummary {
   id: string;
@@ -105,5 +105,57 @@ export async function deleteForm(
     return { success: true };
   } catch (error) {
     return { success: false, error: 'Failed to delete form' };
+  }
+}
+
+// Form submission functions
+export async function submitForm(
+  formId: string,
+  data: Record<string, any>
+): Promise<{
+  success: boolean;
+  submissionId?: string;
+  error?: string;
+  validationErrors?: Record<string, string>;
+}> {
+  try {
+    const response = await fetch(`/api/forms/${formId}/submissions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: result.error,
+        validationErrors: result.errors,
+      };
+    }
+
+    return { success: true, submissionId: result.submissionId };
+  } catch (error) {
+    return { success: false, error: 'Failed to submit form' };
+  }
+}
+
+export async function getFormSubmissions(
+  formId: string
+): Promise<{ submissions?: FormSubmission[]; error?: string }> {
+  try {
+    const response = await fetch(`/api/forms/${formId}/submissions`);
+
+    if (!response.ok) {
+      return { error: 'Failed to fetch submissions' };
+    }
+
+    const submissions = await response.json();
+    return { submissions };
+  } catch (error) {
+    return { error: 'Failed to load submissions' };
   }
 }

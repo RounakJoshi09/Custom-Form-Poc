@@ -1,7 +1,7 @@
 import { Container, Typography, Box, Alert, Button } from '@mui/material';
 import Link from 'next/link';
 import { ArrowBack } from '@mui/icons-material';
-import { FormPreview } from '@/components/PreviewPanel';
+import { FormFiller } from '@/components/FormFiller';
 import { loadForm } from '@/lib/persistence';
 import { FormSchema } from '@/lib/schema';
 
@@ -92,7 +92,7 @@ export default async function FormRenderPage({ params }: FormRenderPageProps) {
           p: 4,
         }}
       >
-        <FormPreview schema={schema} />
+        <FormFiller schema={schema} />
       </Box>
     </Container>
   );

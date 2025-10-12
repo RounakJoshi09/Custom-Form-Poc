@@ -20,25 +20,26 @@ import { createLayoutConfig, findNextPosition, isPositionOccupied } from '@/lib/
 // Action types
 type BuilderAction =
   | { type: 'SET_SCHEMA'; payload: FormSchema }
+  | { type: 'LOAD_SCHEMA'; payload: FormSchema }
   | { type: 'SET_LAYOUT'; payload: LayoutType }
   | { type: 'ADD_FIELD'; payload: { fieldType: FieldType; columnId?: string; position?: FieldPosition } }
   | { type: 'REMOVE_FIELD'; payload: string }
   | {
-      type: 'MOVE_FIELD';
-      payload: { fieldId: string; position: FieldPosition };
-    }
+    type: 'MOVE_FIELD';
+    payload: { fieldId: string; position: FieldPosition };
+  }
   | { type: 'SELECT_FIELD'; payload: string | null }
   | {
-      type: 'UPDATE_FIELD_PROPS';
-      payload: { fieldId: string; props: Partial<FormField['props']> };
-    }
+    type: 'UPDATE_FIELD_PROPS';
+    payload: { fieldId: string; props: Partial<FormField['props']> };
+  }
   | {
-      type: 'UPDATE_FIELD_VALIDATION';
-      payload: {
-        fieldId: string;
-        validation: Partial<FormField['validation']>;
-      };
-    }
+    type: 'UPDATE_FIELD_VALIDATION';
+    payload: {
+      fieldId: string;
+      validation: Partial<FormField['validation']>;
+    };
+  }
   | { type: 'SET_DRAGGED_FIELD'; payload: string | null }
   | { type: 'UPDATE_FORM_METADATA'; payload: Partial<FormSchema['metadata']> }
   | { type: 'UPDATE_COLUMN_SECTION_NAME'; payload: { columnId: string; sectionName: string } };
@@ -74,6 +75,7 @@ function builderReducer(
 ): BuilderState {
   switch (action.type) {
     case 'SET_SCHEMA':
+    case 'LOAD_SCHEMA':
       return {
         ...state,
         schema: action.payload,
@@ -104,7 +106,7 @@ function builderReducer(
       if (action.payload.position) {
         // Use specific position if provided
         position = action.payload.position;
-        
+
         // For new fields, check if position is occupied
         const isOccupied = isPositionOccupied(position, state.schema.positions);
         if (isOccupied) {
@@ -189,7 +191,7 @@ function builderReducer(
     case 'MOVE_FIELD': {
       const { fieldId, position } = action.payload;
       const currentPositions = state.schema.positions;
-      
+
       // Check if target position is occupied by another field
       const fieldAtTargetPosition = Object.entries(currentPositions).find(
         ([otherFieldId, pos]: [string, FieldPosition]) =>
@@ -198,21 +200,21 @@ function builderReducer(
           pos.rowIndex === position.rowIndex &&
           pos.slotIndex === position.slotIndex
       );
-      
+
       const newPositions = { ...currentPositions };
-      
+
       if (fieldAtTargetPosition) {
         // If position is occupied, swap the fields
         const [occupyingFieldId] = fieldAtTargetPosition;
         const currentFieldPosition = currentPositions[fieldId];
-        
+
         newPositions[fieldId] = position;
         newPositions[occupyingFieldId] = currentFieldPosition;
       } else {
         // Target position is free, simply move the field
         newPositions[fieldId] = position;
       }
-      
+
       return {
         ...state,
         schema: {
@@ -308,6 +310,7 @@ function builderReducer(
 // Context type
 interface BuilderContextType {
   state: BuilderState;
+  dispatch: React.Dispatch<BuilderAction>;
   actions: {
     setSchema: (schema: FormSchema) => void;
     setLayout: (layout: LayoutType) => void;
@@ -402,7 +405,7 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <BuilderContext.Provider value={{ state, actions }}>
+    <BuilderContext.Provider value={{ state, dispatch, actions }}>
       {children}
     </BuilderContext.Provider>
   );

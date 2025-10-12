@@ -77,6 +77,15 @@ export interface FormSchema {
   positions: Record<string, FieldPosition>; // fieldId -> position
 }
 
+// Form submission data
+export interface FormSubmission {
+  id: string;
+  formId: string;
+  formName: string;
+  data: Record<string, unknown>;
+  submittedAt: string;
+}
+
 // Form builder state
 export interface BuilderState {
   schema: FormSchema;
