@@ -18,15 +18,12 @@ import {
   Button,
   Divider,
   Alert,
-  Grid,
   OutlinedInput,
   InputLabel,
   Select,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
-import { getColumnFields, getColumnConfig } from '@/lib/layout';
-
-const GridItem = Grid as unknown as React.ComponentType<any>;
+import { getColumnConfig, getFieldAtPosition, getMaxRowsInLayout } from '@/lib/layout';
 
 interface PreviewFieldProps {
   field: FormField;
@@ -96,7 +93,7 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
                 notched={selectOpen || isFilled}
               />
             }
-            sx={{ width: '100%', minWidth: 280, display: 'block' }}
+            sx={{ width: '70%', minWidth: 196, display: 'block' }}
           >
             <MenuItem value="" disabled={Boolean(field.validation.required)}>
               {field.props.placeholder || 'Select an option'}
@@ -227,6 +224,7 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
 interface PreviewColumnProps {
   columnId: string;
   width: number;
+  maxRows: number;
   schema: FormSchema;
   formData: Record<string, any>;
   errors: Record<string, string>;
@@ -236,99 +234,81 @@ interface PreviewColumnProps {
 function PreviewColumn({
   columnId,
   width,
+  maxRows,
   schema,
   formData,
   errors,
   onFieldChange,
 }: PreviewColumnProps) {
-  const columnFields = getColumnFields(
-    columnId,
-    schema.fields,
-    schema.positions
-  );
   const columnConfig = getColumnConfig(schema.layout, columnId);
 
   if (!columnConfig) return null;
 
-  const gridSize = Math.max(
-    1,
-    Math.min(12, Math.floor(12 / columnConfig.slotsPerRow))
-  );
+  const { slotsPerRow } = columnConfig;
 
   return (
-    <GridItem
-      xs={12}
-      md={width === 25 ? 3 : width === 50 ? 6 : width === 75 ? 9 : 12}
-    >
-      {/* Section Name Heading */}
-      {columnConfig.sectionName && (
-        <Box sx={{ mb: 2, px: 1 }}>
-          <Typography 
-            variant="h6" 
-            component="h3"
-            sx={{ 
-              fontWeight: 600,
-              color: 'text.primary',
-              borderBottom: '2px solid',
-              borderColor: 'primary.main',
-              pb: 0.5,
-              mb: 1
-            }}
-          >
-            {columnConfig.sectionName}
-          </Typography>
-        </Box>
-      )}
-      <Box sx={{ p: 1 }}>
-        {columnFields.length === 0 ? (
-          <Box
-            sx={{
-              minHeight: 100,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              No fields in this column
+    <Box sx={{ flex: `0 0 ${width}%`, maxWidth: `${width}%` }}>
+      <Paper
+        elevation={0}
+        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+      >
+        <Box sx={{ p: 1 }}>
+          {columnConfig.sectionName && (
+            <Typography variant="subtitle2" color="text.primary" gutterBottom sx={{ fontWeight: 600 }}>
+              {columnConfig.sectionName}
             </Typography>
-          </Box>
-        ) : (
-          <Box>
-            {columnFields.map((row, rowIndex) => (
-              <Grid container spacing={2} key={rowIndex} sx={{ mb: 1 }}>
-                {Array.from({ length: columnConfig.slotsPerRow }).map(
-                  (_, slotIndex) => {
-                    const field = row[slotIndex];
-                    if (!field)
-                      return (
-                        <GridItem
-                          xs={gridSize}
-                          key={slotIndex}
-                        />
-                      );
+          )}
+        </Box>
+        <Divider />
 
-                    return (
-                      <GridItem
-                        xs={gridSize}
-                        key={slotIndex}
-                      >
-                        <PreviewField
-                          field={field}
-                          value={formData[field.key]}
-                          onChange={(value) => onFieldChange(field.key, value)}
-                          error={errors[field.key]}
-                        />
-                      </GridItem>
-                    );
-                  }
-                )}
-              </Grid>
-            ))}
-          </Box>
-        )}
-      </Box>
-    </GridItem>
+        {/* Grid of cells - only showing fields, no empty cells */}
+        <Box sx={{ p: 1 }}>
+          {Array.from({ length: maxRows }).map((_, rowIndex) => {
+            // Check if this row has any fields
+            const rowHasFields = Array.from({ length: slotsPerRow }).some((_, slotIndex) => {
+              const position = { columnId, rowIndex, slotIndex };
+              const fieldId = getFieldAtPosition(position, schema.positions);
+              return fieldId !== null;
+            });
+
+            // Only render the row if it has fields
+            if (!rowHasFields) return null;
+
+            return (
+              <Box key={rowIndex} sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                {Array.from({ length: slotsPerRow }).map((_, slotIndex) => {
+                  const position = { columnId, rowIndex, slotIndex };
+                  const fieldId = getFieldAtPosition(position, schema.positions);
+                  const field = fieldId ? schema.fields.find(f => f.id === fieldId) : undefined;
+
+                  // Only render the cell if it has a field
+                  if (!field) return null;
+
+                  return (
+                    <Box
+                      key={`${rowIndex}-${slotIndex}`}
+                      sx={{
+                        flex: `0 0 ${100 / slotsPerRow}%`,
+                        maxWidth: `${100 / slotsPerRow}%`,
+                        minHeight: 80,
+                        p: 0.5,
+                      }}
+                    >
+                      <PreviewField
+                        field={field}
+                        value={formData[field.key]}
+                        onChange={(value) => onFieldChange(field.key, value)}
+                        error={errors[field.key]}
+                      />
+                    </Box>
+                  );
+                })}
+              </Box>
+            );
+          })}
+        </Box>
+      </Paper>
+    </Box>
   );
 }
 
@@ -339,6 +319,9 @@ interface FormPreviewProps {
 export function FormPreview({ schema }: FormPreviewProps) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Calculate max rows to match canvas behavior
+  const maxRows = getMaxRowsInLayout(schema.positions, 3);
 
   const handleFieldChange = (fieldKey: string, value: any) => {
     setFormData((prev) => ({ ...prev, [fieldKey]: value }));
@@ -385,19 +368,21 @@ export function FormPreview({ schema }: FormPreviewProps) {
         </Box>
       ) : (
         <>
-          <Grid container spacing={2}>
+          {/* Canvas-like layout structure */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
             {schema.layout.columns.map((column) => (
               <PreviewColumn
                 key={column.id}
                 columnId={column.id}
                 width={column.width}
+                maxRows={maxRows}
                 schema={schema}
                 formData={formData}
                 errors={errors}
                 onFieldChange={handleFieldChange}
               />
             ))}
-          </Grid>
+          </Box>
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Button
