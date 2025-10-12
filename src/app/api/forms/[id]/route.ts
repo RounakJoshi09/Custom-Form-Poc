@@ -6,15 +6,15 @@ import { FormSchema } from '@/lib/schema';
 const FORMS_DIR = path.join(process.cwd(), 'data', 'forms');
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET /api/forms/[id] - Get a specific form
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PUT /api/forms/[id] - Update a form
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/forms/[id] - Delete a form
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(

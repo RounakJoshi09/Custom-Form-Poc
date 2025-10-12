@@ -40,7 +40,8 @@ type BuilderAction =
       };
     }
   | { type: 'SET_DRAGGED_FIELD'; payload: string | null }
-  | { type: 'UPDATE_FORM_METADATA'; payload: Partial<FormSchema['metadata']> };
+  | { type: 'UPDATE_FORM_METADATA'; payload: Partial<FormSchema['metadata']> }
+  | { type: 'UPDATE_COLUMN_SECTION_NAME'; payload: { columnId: string; sectionName: string } };
 
 // Create initial state
 function createInitialState(): BuilderState {
@@ -198,7 +199,7 @@ function builderReducer(
           pos.slotIndex === position.slotIndex
       );
       
-      let newPositions = { ...currentPositions };
+      const newPositions = { ...currentPositions };
       
       if (fieldAtTargetPosition) {
         // If position is occupied, swap the fields
@@ -280,6 +281,25 @@ function builderReducer(
       };
     }
 
+    case 'UPDATE_COLUMN_SECTION_NAME': {
+      const { columnId, sectionName } = action.payload;
+      return {
+        ...state,
+        schema: {
+          ...state.schema,
+          layout: {
+            ...state.schema.layout,
+            columns: state.schema.layout.columns.map((column) =>
+              column.id === columnId
+                ? { ...column, sectionName: sectionName || undefined }
+                : column
+            ),
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -305,6 +325,7 @@ interface BuilderContextType {
     ) => void;
     setDraggedField: (fieldId: string | null) => void;
     updateFormMetadata: (metadata: Partial<FormSchema['metadata']>) => void;
+    updateColumnSectionName: (columnId: string, sectionName: string) => void;
   };
 }
 
@@ -368,6 +389,13 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
     updateFormMetadata: useCallback(
       (metadata: Partial<FormSchema['metadata']>) => {
         dispatch({ type: 'UPDATE_FORM_METADATA', payload: metadata });
+      },
+      []
+    ),
+
+    updateColumnSectionName: useCallback(
+      (columnId: string, sectionName: string) => {
+        dispatch({ type: 'UPDATE_COLUMN_SECTION_NAME', payload: { columnId, sectionName } });
       },
       []
     ),

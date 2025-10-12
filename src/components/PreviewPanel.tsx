@@ -260,6 +260,25 @@ function PreviewColumn({
       xs={12}
       md={width === 25 ? 3 : width === 50 ? 6 : width === 75 ? 9 : 12}
     >
+      {/* Section Name Heading */}
+      {columnConfig.sectionName && (
+        <Box sx={{ mb: 2, px: 1 }}>
+          <Typography 
+            variant="h6" 
+            component="h3"
+            sx={{ 
+              fontWeight: 600,
+              color: 'text.primary',
+              borderBottom: '2px solid',
+              borderColor: 'primary.main',
+              pb: 0.5,
+              mb: 1
+            }}
+          >
+            {columnConfig.sectionName}
+          </Typography>
+        </Box>
+      )}
       <Box sx={{ p: 1 }}>
         {columnFields.length === 0 ? (
           <Box

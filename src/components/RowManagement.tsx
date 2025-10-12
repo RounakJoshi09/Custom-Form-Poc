@@ -27,7 +27,7 @@ interface RowManagementProps {
 export default function RowManagement({ maxRows, onRowsChange }: RowManagementProps) {
   const { state } = useBuilder();
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const { positions, layout } = state.schema;
   const stats = getLayoutStats(positions, layout);
   const emptyRows = getEmptyRowsCount(positions, layout, maxRows);
@@ -46,7 +46,7 @@ export default function RowManagement({ maxRows, onRowsChange }: RowManagementPr
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Box
+      {/* <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -70,7 +70,7 @@ export default function RowManagement({ maxRows, onRowsChange }: RowManagementPr
           color={emptyRows < 2 ? 'warning' : 'default'}
         />
         {isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-      </Box>
+      </Box> */}
 
       <Collapse in={isExpanded}>
         <Box sx={{ mt: 1, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
@@ -86,8 +86,8 @@ export default function RowManagement({ maxRows, onRowsChange }: RowManagementPr
               </Tooltip>
               <Tooltip title={canRemoveRows ? "Remove 1 row" : "Cannot remove rows with content"}>
                 <span>
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     onClick={handleRemoveRows}
                     disabled={!canRemoveRows}
                   >
@@ -97,28 +97,28 @@ export default function RowManagement({ maxRows, onRowsChange }: RowManagementPr
               </Tooltip>
             </Box>
           </Box>
-          
+
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Tooltip title="Layout utilization based on used rows">
-              <Chip 
+              <Chip
                 icon={<InfoIcon />}
-                label={`${stats.utilization}% utilized`} 
-                size="small" 
+                label={`${stats.utilization}% utilized`}
+                size="small"
                 variant="filled"
                 color={stats.utilization > 80 ? 'warning' : 'primary'}
               />
             </Tooltip>
-            <Chip 
-              label={`Last used row: ${stats.maxUsedRow + 1}`} 
-              size="small" 
-              variant="outlined" 
+            <Chip
+              label={`Last used row: ${stats.maxUsedRow + 1}`}
+              size="small"
+              variant="outlined"
             />
           </Box>
-          
+
           {emptyRows < 2 && (
-            <Typography 
-              variant="caption" 
-              color="warning.main" 
+            <Typography
+              variant="caption"
+              color="warning.main"
               sx={{ display: 'block', mt: 1 }}
             >
               ⚠️ Consider adding more rows for better drop zone availability

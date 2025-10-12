@@ -6,9 +6,9 @@ import { loadForm } from '@/lib/persistence';
 import { FormSchema } from '@/lib/schema';
 
 interface FormRenderPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // This is a server component that fetches the form data
@@ -38,7 +38,7 @@ async function getFormData(
 }
 
 export default async function FormRenderPage({ params }: FormRenderPageProps) {
-  const { id } = params;
+  const { id } = await params;
   const { schema, error } = await getFormData(id);
 
   if (error || !schema) {
@@ -100,7 +100,7 @@ export default async function FormRenderPage({ params }: FormRenderPageProps) {
 
 // Optional: Generate metadata for the page
 export async function generateMetadata({ params }: FormRenderPageProps) {
-  const { id } = params;
+  const { id } = await params;
   const { schema } = await getFormData(id);
 
   return {

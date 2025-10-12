@@ -8,6 +8,7 @@ import {
   ButtonGroup,
   Button,
   Divider,
+  TextField,
 } from '@mui/material';
 import { useBuilder } from '@/context/BuilderContext';
 import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition } from '@/lib/layout';
@@ -24,9 +25,9 @@ interface GridColumnProps {
 function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
   const { state } = useBuilder();
   const { fields, positions } = state.schema;
-  
+
   const columnConfig = getColumnConfig(state.schema.layout, columnId);
-  
+
   if (!columnConfig) {
     return null;
   }
@@ -40,12 +41,17 @@ function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
         sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
       >
         <Box sx={{ p: 1 }}>
+          {columnConfig.sectionName && (
+            <Typography variant="subtitle2" color="text.primary" gutterBottom sx={{ fontWeight: 600 }}>
+              {columnConfig.sectionName}
+            </Typography>
+          )}
           <Typography variant="caption" color="text.secondary" gutterBottom>
             Column {width}% ({slotsPerRow} per row)
           </Typography>
         </Box>
         <Divider />
-        
+
         {/* Grid of cells */}
         <Box sx={{ p: 1 }}>
           {Array.from({ length: maxRows }).map((_, rowIndex) => (
@@ -55,7 +61,7 @@ function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
                 const fieldId = getFieldAtPosition(position, positions);
                 const field = fieldId ? fields.find(f => f.id === fieldId) : undefined;
                 const isSelected = field && state.selectedFieldId === field.id;
-                
+
                 return (
                   <GridCell
                     key={`${rowIndex}-${slotIndex}`}
@@ -81,14 +87,14 @@ export default function Canvas() {
   const { layout, positions } = state.schema;
 
   const layoutOptions: LayoutType[] = ['25-75', '50-50', '75-25', '100'];
-  
+
   // Auto-expanding rows with manual override capability
   const autoCalculatedRows = getMaxRowsInLayout(positions, 3); // 3 empty rows minimum
   const [manualRowCount, setManualRowCount] = useState<number | null>(null);
-  
+
   // Use manual row count if set, otherwise use auto-calculated
   const maxRows = manualRowCount || autoCalculatedRows;
-  
+
   // Reset manual override when auto-calculated exceeds manual setting
   useEffect(() => {
     if (manualRowCount && autoCalculatedRows > manualRowCount) {
@@ -122,10 +128,31 @@ export default function Canvas() {
             ))}
           </ButtonGroup>
         </Box>
-        
+
+        {/* Section Names Configuration */}
+        <Box sx={{ mb: 0 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Section Names:
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {layout.columns.map((column, index) => (
+              <Box sx={{ flex: layout.columns.length === 1 ? '1 1 100%' : '1 1 50%' }} key={column.id}>
+                <TextField
+                  size="small"
+                  label={`Section ${index + 1} Name`}
+                  placeholder="Optional section label"
+                  value={column.sectionName || ''}
+                  onChange={(e) => actions.updateColumnSectionName(column.id, e.target.value)}
+                  fullWidth
+                />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
         {/* Row Management Component */}
-        <RowManagement 
-          maxRows={maxRows} 
+        <RowManagement
+          maxRows={maxRows}
           onRowsChange={setManualRowCount}
         />
       </Box>
@@ -136,10 +163,10 @@ export default function Canvas() {
       <Box sx={{ flex: 1, p: 2, overflow: 'auto' }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
           {layout.columns.map((column) => (
-            <GridColumn 
-              key={column.id} 
-              columnId={column.id} 
-              width={column.width} 
+            <GridColumn
+              key={column.id}
+              columnId={column.id}
+              width={column.width}
               maxRows={maxRows}
             />
           ))}
