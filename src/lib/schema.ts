@@ -25,6 +25,12 @@ export interface FieldProps {
   helperText?: string;
   // For select fields
   options?: Array<{ value: string; label: string }>;
+  // API-driven select fields
+  isApiDriven?: boolean;
+  apiEndpoint?: string;
+  apiToken?: string;
+  apiMethod?: 'GET' | 'POST';
+  apiPayload?: string; // JSON string for POST requests
   // For file fields
   accept?: string;
   multiple?: boolean;

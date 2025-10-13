@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Paper,
   Box,
@@ -21,9 +21,12 @@ import {
   OutlinedInput,
   InputLabel,
   Select,
+  CircularProgress,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
 import { getColumnConfig, getFieldAtPosition, getMaxRowsInLayout } from '@/lib/layout';
+import { useDropdownCache } from '@/context/DropdownCacheContext';
+import { DropdownOption } from '@/lib/dropdown-api';
 
 interface PreviewFieldProps {
   field: FormField;
@@ -35,6 +38,38 @@ interface PreviewFieldProps {
 function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
   // Track open state for select to control label shrink/notch like a text field
   const [selectOpen, setSelectOpen] = useState(false);
+  const [apiOptions, setApiOptions] = useState<DropdownOption[]>([]);
+  const [apiOptionsLoaded, setApiOptionsLoaded] = useState(false);
+  
+  const dropdownCache = useDropdownCache();
+
+  // Load API options for select fields when opened
+  const loadApiOptions = async () => {
+    if (field.type !== 'select' || !field.props.isApiDriven || apiOptionsLoaded) {
+      return;
+    }
+
+    const { apiEndpoint, apiToken, apiMethod, apiPayload } = field.props;
+    
+    if (!apiEndpoint || !apiMethod) {
+      return;
+    }
+
+    try {
+      const options = await dropdownCache.getOptions(field.id, {
+        apiEndpoint,
+        apiToken,
+        apiMethod,
+        apiPayload,
+      });
+      
+      setApiOptions(options);
+      setApiOptionsLoaded(true);
+    } catch (error) {
+      // Error handling is done in the cache context
+      setApiOptionsLoaded(true);
+    }
+  };
 
   const commonProps = {
     fullWidth: true,
@@ -70,16 +105,28 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
       );
 
     case 'select': {
-      const options = field.props.options ?? [];
+      const isApiDriven = field.props.isApiDriven;
+      const staticOptions = field.props.options ?? [];
+      const options = isApiDriven ? apiOptions : staticOptions;
       const isFilled = Boolean(value);
+      const isLoading = isApiDriven && dropdownCache.isLoading(field.id);
+      const hasApiError = isApiDriven && dropdownCache.hasError(field.id);
+      const isDisabled = isApiDriven && (isLoading || hasApiError);
+      
       return (
         <FormControl fullWidth size="small" margin="normal" error={Boolean(error)}>
           <InputLabel shrink={selectOpen || isFilled}>{field.props.label}</InputLabel>
           <Select
             value={value ?? ''}
             onChange={(e) => onChange(e.target.value)}
-            onOpen={() => setSelectOpen(true)}
+            onOpen={() => {
+              setSelectOpen(true);
+              if (isApiDriven) {
+                loadApiOptions();
+              }
+            }}
             onClose={() => setSelectOpen(false)}
+            disabled={isDisabled}
             renderValue={(selected) => {
               if (selected === '' || selected === undefined || selected === null) {
                 return '';
@@ -93,16 +140,24 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
                 notched={selectOpen || isFilled}
               />
             }
-            sx={{ width: '70%', minWidth: 196, display: 'block' }}
           >
-            <MenuItem value="" disabled={Boolean(field.validation.required)}>
-              {field.props.placeholder || 'Select an option'}
-            </MenuItem>
-            {options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
+            {isLoading ? (
+              <MenuItem disabled>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={16} />
+                  <Typography variant="body2">Loading options...</Typography>
+                </Box>
               </MenuItem>
-            ))}
+            ) : [
+              <MenuItem key="empty" value="" disabled={Boolean(field.validation.required)}>
+                {field.props.placeholder || 'Select an option'}
+              </MenuItem>,
+              ...options.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))
+            ]}
           </Select>
           {(error || field.props.helperText) && (
             <FormHelperText error={Boolean(error)}>

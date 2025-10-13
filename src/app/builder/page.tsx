@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Container, Box, Tabs, Tab, Paper, Button, Alert, Snackbar } from '@mui/material';
+import React, { useState, useEffect, Suspense } from 'react';
+import { Container, Box, Tabs, Tab, Paper, Button, Alert, Snackbar, CircularProgress, Typography } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { BuilderProvider, useBuilder } from '@/context/BuilderContext';
 import FieldPalette from '@/components/FieldPalette';
@@ -135,10 +135,33 @@ function BuilderContent() {
   );
 }
 
+// Loading component for Suspense fallback
+function BuilderLoading() {
+  return (
+    <Container maxWidth={false} sx={{ py: 2 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: 'calc(100vh - 100px)' 
+      }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress size={48} sx={{ mb: 2 }} />
+          <Typography variant="body1" color="text.secondary">
+            Loading form builder...
+          </Typography>
+        </Box>
+      </Box>
+    </Container>
+  );
+}
+
 export default function BuilderPage() {
   return (
     <BuilderProvider>
-      <BuilderContent />
+      <Suspense fallback={<BuilderLoading />}>
+        <BuilderContent />
+      </Suspense>
     </BuilderProvider>
   );
 }

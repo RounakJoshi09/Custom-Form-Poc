@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import ThemeRegistry from '@/lib/theme';
 import DnDProvider from '@/lib/dnd-provider';
+import { DropdownCacheProvider } from '@/context/DropdownCacheContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -28,7 +29,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeRegistry>
-          <DnDProvider>{children}</DnDProvider>
+          <DropdownCacheProvider>
+            <DnDProvider>{children}</DnDProvider>
+          </DropdownCacheProvider>
         </ThemeRegistry>
       </body>
     </html>

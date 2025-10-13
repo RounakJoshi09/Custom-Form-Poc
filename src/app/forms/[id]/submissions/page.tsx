@@ -75,8 +75,13 @@ function SubmissionCard({ submission, schema }: { submission: FormSubmission; sc
                 const radioOption = field.props.options?.find(o => o.value === value);
                 return radioOption ? radioOption.label : String(value);
             case 'file':
-                if (value instanceof FileList) {
+                // Check if we're in browser environment and value is FileList
+                if (typeof window !== 'undefined' && typeof FileList !== 'undefined' && value instanceof FileList) {
                     return Array.from(value).map(f => f.name).join(', ');
+                }
+                // Handle array of file names (likely from form submission)
+                if (Array.isArray(value)) {
+                    return value.join(', ');
                 }
                 return String(value);
             default:
@@ -196,7 +201,7 @@ export default async function FormSubmissionsPage({ params }: FormSubmissionsPag
             ) : (
                 <Grid container spacing={3}>
                     {submissions.map((submission) => (
-                        <Grid item xs={12} md={6} lg={4} key={submission.id}>
+                        <Grid size={{ xs: 12, md: 6, lg: 4 }} key={submission.id}>
                             <SubmissionCard submission={submission} schema={schema} />
                         </Grid>
                     ))}
