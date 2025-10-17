@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Paper,
   Box,
@@ -40,7 +40,7 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
   const [selectOpen, setSelectOpen] = useState(false);
   const [apiOptions, setApiOptions] = useState<DropdownOption[]>([]);
   const [apiOptionsLoaded, setApiOptionsLoaded] = useState(false);
-  
+
   const dropdownCache = useDropdownCache();
 
   // Load API options for select fields when opened
@@ -50,7 +50,7 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
     }
 
     const { apiEndpoint, apiToken, apiMethod, apiPayload } = field.props;
-    
+
     if (!apiEndpoint || !apiMethod) {
       return;
     }
@@ -62,10 +62,10 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
         apiMethod,
         apiPayload,
       });
-      
+
       setApiOptions(options);
       setApiOptionsLoaded(true);
-    } catch (error) {
+    } catch {
       // Error handling is done in the cache context
       setApiOptionsLoaded(true);
     }
@@ -112,7 +112,7 @@ function PreviewField({ field, value, onChange, error }: PreviewFieldProps) {
       const isLoading = isApiDriven && dropdownCache.isLoading(field.id);
       const hasApiError = isApiDriven && dropdownCache.hasError(field.id);
       const isDisabled = isApiDriven && (isLoading || hasApiError);
-      
+
       return (
         <FormControl fullWidth size="small" margin="normal" error={Boolean(error)}>
           <InputLabel shrink={selectOpen || isFilled}>{field.props.label}</InputLabel>
@@ -288,7 +288,6 @@ interface PreviewColumnProps {
 
 function PreviewColumn({
   columnId,
-  width,
   maxRows,
   schema,
   formData,
@@ -302,10 +301,21 @@ function PreviewColumn({
   const { slotsPerRow } = columnConfig;
 
   return (
-    <Box sx={{ flex: `0 0 ${width}%`, maxWidth: `${width}%` }}>
+    <Box sx={{
+      width: '100%',
+      minWidth: 0, // Allow shrinking
+      overflow: 'hidden' // Prevent content overflow
+    }}>
       <Paper
         elevation={0}
-        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
       >
         <Box sx={{ p: 1 }}>
           {columnConfig.sectionName && (
@@ -316,7 +326,7 @@ function PreviewColumn({
         </Box>
         <Divider />
 
-        {/* Grid of cells - only showing fields, no empty cells */}
+        {/* Grid of cells - maintaining exact positioning like canvas */}
         <Box sx={{ p: 1 }}>
           {Array.from({ length: maxRows }).map((_, rowIndex) => {
             // Check if this row has any fields
@@ -330,14 +340,17 @@ function PreviewColumn({
             if (!rowHasFields) return null;
 
             return (
-              <Box key={rowIndex} sx={{ display: 'flex', gap: 1, mb: 1 }}>
+              <Box key={rowIndex} sx={{
+                display: 'flex',
+                gap: 1,
+                mb: 1,
+                width: '100%',
+                overflow: 'hidden' // Prevent row overflow
+              }}>
                 {Array.from({ length: slotsPerRow }).map((_, slotIndex) => {
                   const position = { columnId, rowIndex, slotIndex };
                   const fieldId = getFieldAtPosition(position, schema.positions);
                   const field = fieldId ? schema.fields.find(f => f.id === fieldId) : undefined;
-
-                  // Only render the cell if it has a field
-                  if (!field) return null;
 
                   return (
                     <Box
@@ -347,14 +360,20 @@ function PreviewColumn({
                         maxWidth: `${100 / slotsPerRow}%`,
                         minHeight: 80,
                         p: 0.5,
+                        minWidth: 0, // Allow shrinking
+                        overflow: 'hidden', // Prevent content overflow
+                        // Make empty cells invisible but maintain their space
+                        visibility: field ? 'visible' : 'hidden',
                       }}
                     >
-                      <PreviewField
-                        field={field}
-                        value={formData[field.key]}
-                        onChange={(value) => onFieldChange(field.key, value)}
-                        error={errors[field.key]}
-                      />
+                      {field && (
+                        <PreviewField
+                          field={field}
+                          value={formData[field.key]}
+                          onChange={(value) => onFieldChange(field.key, value)}
+                          error={errors[field.key]}
+                        />
+                      )}
                     </Box>
                   );
                 })}
@@ -424,7 +443,13 @@ export function FormPreview({ schema }: FormPreviewProps) {
       ) : (
         <>
           {/* Canvas-like layout structure */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: schema.layout.columns.map(col => `${col.width}fr`).join(' '),
+            gap: 2,
+            width: '100%',
+            overflow: 'hidden' // Prevent horizontal overflow
+          }}>
             {schema.layout.columns.map((column) => (
               <PreviewColumn
                 key={column.id}

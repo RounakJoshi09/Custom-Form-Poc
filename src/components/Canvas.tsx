@@ -35,10 +35,21 @@ function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
   const { slotsPerRow } = columnConfig;
 
   return (
-    <Box sx={{ flex: `0 0 ${width}%`, maxWidth: `${width}%` }}>
+    <Box sx={{
+      width: '100%',
+      minWidth: 0,
+      overflow: 'hidden'
+    }}>
       <Paper
         elevation={0}
-        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
       >
         <Box sx={{ p: 1 }}>
           {columnConfig.sectionName && (
@@ -161,7 +172,13 @@ export default function Canvas() {
 
       {/* Canvas Area */}
       <Box sx={{ flex: 1, p: 2, overflow: 'auto' }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: layout.columns.map(col => `${col.width}fr`).join(' '),
+          gap: 2,
+          width: '100%',
+          overflow: 'hidden'
+        }}>
           {layout.columns.map((column) => (
             <GridColumn
               key={column.id}
