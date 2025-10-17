@@ -14,15 +14,23 @@ import {
   FieldType,
   LayoutType,
   FieldPosition,
+  SectionConfig,
 } from '@/lib/schema';
-import { createLayoutConfig, findNextPosition, isPositionOccupied } from '@/lib/layout';
+import { 
+  createLayoutConfig, 
+  findNextPosition, 
+  isPositionOccupied, 
+  createSection,
+  getSections,
+  getSectionById 
+} from '@/lib/layout';
 
 // Action types
 type BuilderAction =
   | { type: 'SET_SCHEMA'; payload: FormSchema }
   | { type: 'LOAD_SCHEMA'; payload: FormSchema }
   | { type: 'SET_LAYOUT'; payload: LayoutType }
-  | { type: 'ADD_FIELD'; payload: { fieldType: FieldType; columnId?: string; position?: FieldPosition } }
+  | { type: 'ADD_FIELD'; payload: { fieldType: FieldType; columnId?: string; sectionId?: string; position?: FieldPosition } }
   | { type: 'REMOVE_FIELD'; payload: string }
   | {
     type: 'MOVE_FIELD';
@@ -42,7 +50,11 @@ type BuilderAction =
   }
   | { type: 'SET_DRAGGED_FIELD'; payload: string | null }
   | { type: 'UPDATE_FORM_METADATA'; payload: Partial<FormSchema['metadata']> }
-  | { type: 'UPDATE_COLUMN_SECTION_NAME'; payload: { columnId: string; sectionName: string } };
+  | { type: 'UPDATE_COLUMN_SECTION_NAME'; payload: { columnId: string; sectionName: string } }
+  // Section-related actions
+  | { type: 'ADD_SECTION'; payload: { columnId: string } }
+  | { type: 'REMOVE_SECTION'; payload: { columnId: string; sectionId: string } }
+  | { type: 'RENAME_SECTION'; payload: { columnId: string; sectionId: string; name: string } };
 
 // Create initial state
 function createInitialState(): BuilderState {
@@ -110,14 +122,15 @@ function builderReducer(
         // For new fields, check if position is occupied
         const isOccupied = isPositionOccupied(position, state.schema.positions);
         if (isOccupied) {
-          // Position is occupied, find next available position in the same column
+          // Position is occupied, find next available position in the same column/section
           const nextPosition = findNextPosition(
             position.columnId,
             state.schema.layout,
-            state.schema.positions
+            state.schema.positions,
+            position.sectionId
           );
           if (!nextPosition) {
-            // No space available in this column
+            // No space available in this column/section
             return state;
           }
           position = nextPosition;
@@ -126,12 +139,14 @@ function builderReducer(
         // Find target column (first column if not specified)
         const targetColumnId =
           action.payload.columnId || state.schema.layout.columns[0].id;
+        const targetSectionId = action.payload.sectionId;
 
         // Find next available position
         const nextPosition = findNextPosition(
           targetColumnId,
           state.schema.layout,
-          state.schema.positions
+          state.schema.positions,
+          targetSectionId
         );
         if (!nextPosition) {
           // No space available
@@ -302,6 +317,90 @@ function builderReducer(
       };
     }
 
+    case 'ADD_SECTION': {
+      const { columnId } = action.payload;
+      return {
+        ...state,
+        schema: {
+          ...state.schema,
+          layout: {
+            ...state.schema.layout,
+            columns: state.schema.layout.columns.map((column) => {
+              if (column.id === columnId && column.width === 100) {
+                const currentSections = column.sections || [];
+                const newSectionNumber = currentSections.length + 1;
+                const newSection = createSection(`Section ${newSectionNumber}`);
+                return {
+                  ...column,
+                  sections: [...currentSections, newSection],
+                };
+              }
+              return column;
+            }),
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }
+
+    case 'REMOVE_SECTION': {
+      const { columnId, sectionId } = action.payload;
+      return {
+        ...state,
+        schema: {
+          ...state.schema,
+          layout: {
+            ...state.schema.layout,
+            columns: state.schema.layout.columns.map((column) => {
+              if (column.id === columnId && column.sections) {
+                return {
+                  ...column,
+                  sections: column.sections.filter((section) => section.id !== sectionId),
+                };
+              }
+              return column;
+            }),
+          },
+          // Also remove all fields in this section
+          positions: Object.fromEntries(
+            Object.entries(state.schema.positions).filter(
+              ([_, position]) => position.sectionId !== sectionId
+            )
+          ),
+          fields: state.schema.fields.filter((field) => {
+            const position = state.schema.positions[field.id];
+            return !position || position.sectionId !== sectionId;
+          }),
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }
+
+    case 'RENAME_SECTION': {
+      const { columnId, sectionId, name } = action.payload;
+      return {
+        ...state,
+        schema: {
+          ...state.schema,
+          layout: {
+            ...state.schema.layout,
+            columns: state.schema.layout.columns.map((column) => {
+              if (column.id === columnId && column.sections) {
+                return {
+                  ...column,
+                  sections: column.sections.map((section) =>
+                    section.id === sectionId ? { ...section, name } : section
+                  ),
+                };
+              }
+              return column;
+            }),
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -314,7 +413,7 @@ interface BuilderContextType {
   actions: {
     setSchema: (schema: FormSchema) => void;
     setLayout: (layout: LayoutType) => void;
-    addField: (fieldType: FieldType, columnId?: string, position?: FieldPosition) => void;
+    addField: (fieldType: FieldType, columnId?: string, sectionId?: string, position?: FieldPosition) => void;
     removeField: (fieldId: string) => void;
     moveField: (fieldId: string, position: FieldPosition) => void;
     selectField: (fieldId: string | null) => void;
@@ -329,6 +428,10 @@ interface BuilderContextType {
     setDraggedField: (fieldId: string | null) => void;
     updateFormMetadata: (metadata: Partial<FormSchema['metadata']>) => void;
     updateColumnSectionName: (columnId: string, sectionName: string) => void;
+    // Section actions
+    addSection: (columnId: string) => void;
+    removeSection: (columnId: string, sectionId: string) => void;
+    renameSection: (columnId: string, sectionId: string, name: string) => void;
   };
 }
 
@@ -352,8 +455,8 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_LAYOUT', payload: layout });
     }, []),
 
-    addField: useCallback((fieldType: FieldType, columnId?: string, position?: FieldPosition) => {
-      dispatch({ type: 'ADD_FIELD', payload: { fieldType, columnId, position } });
+    addField: useCallback((fieldType: FieldType, columnId?: string, sectionId?: string, position?: FieldPosition) => {
+      dispatch({ type: 'ADD_FIELD', payload: { fieldType, columnId, sectionId, position } });
     }, []),
 
     removeField: useCallback((fieldId: string) => {
@@ -402,6 +505,18 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
       },
       []
     ),
+
+    addSection: useCallback((columnId: string) => {
+      dispatch({ type: 'ADD_SECTION', payload: { columnId } });
+    }, []),
+
+    removeSection: useCallback((columnId: string, sectionId: string) => {
+      dispatch({ type: 'REMOVE_SECTION', payload: { columnId, sectionId } });
+    }, []),
+
+    renameSection: useCallback((columnId: string, sectionId: string, name: string) => {
+      dispatch({ type: 'RENAME_SECTION', payload: { columnId, sectionId, name } });
+    }, []),
   };
 
   return (

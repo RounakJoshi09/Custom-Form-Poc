@@ -24,7 +24,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
-import { getColumnConfig, getFieldAtPosition, getMaxRowsInLayout } from '@/lib/layout';
+import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition, getSections, getSectionFields } from '@/lib/layout';
 import { useDropdownCache } from '@/context/DropdownCacheContext';
 import { DropdownOption } from '@/lib/dropdown-api';
 
@@ -286,6 +286,92 @@ interface PreviewColumnProps {
   onFieldChange: (fieldKey: string, value: any) => void;
 }
 
+// PreviewSection component for rendering individual sections
+function PreviewSection({
+  sectionId,
+  sectionName,
+  slotsPerRow,
+  columnId,
+  maxRows,
+  schema,
+  formData,
+  errors,
+  onFieldChange,
+}: {
+  sectionId: string;
+  sectionName: string;
+  slotsPerRow: number;
+  columnId: string;
+  maxRows: number;
+  schema: FormSchema;
+  formData: Record<string, any>;
+  errors: Record<string, string>;
+  onFieldChange: (fieldKey: string, value: any) => void;
+}) {
+  return (
+    <Box sx={{ mb: 3 }}>
+      {/* Section Header */}
+      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+        {sectionName}
+      </Typography>
+      <Divider sx={{ mb: 2 }} />
+      
+      {/* Section Fields */}
+      {Array.from({ length: maxRows }).map((_, rowIndex) => {
+        // Check if this row has any fields in this section
+        const rowHasFields = Array.from({ length: slotsPerRow }).some((_, slotIndex) => {
+          const position = { columnId, sectionId, rowIndex, slotIndex };
+          const fieldId = getFieldAtPosition(position, schema.positions);
+          return fieldId !== null;
+        });
+
+        // Only render the row if it has fields
+        if (!rowHasFields) return null;
+
+        return (
+          <Box key={rowIndex} sx={{
+            display: 'flex',
+            gap: 1,
+            mb: 1,
+            width: '100%',
+            overflow: 'hidden'
+          }}>
+            {Array.from({ length: slotsPerRow }).map((_, slotIndex) => {
+              const position = { columnId, sectionId, rowIndex, slotIndex };
+              const fieldId = getFieldAtPosition(position, schema.positions);
+              const field = fieldId ? schema.fields.find(f => f.id === fieldId) : undefined;
+
+              return (
+                <Box
+                  key={`${rowIndex}-${slotIndex}`}
+                  sx={{
+                    flex: `0 0 ${100 / slotsPerRow}%`,
+                    maxWidth: `${100 / slotsPerRow}%`,
+                    minHeight: 80,
+                    p: 0.5,
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    visibility: field ? 'visible' : 'hidden',
+                  }}
+                >
+                  {field && (
+                    <PreviewField
+                      field={field}
+                      value={formData[field.key]}
+                      onChange={(value) => onFieldChange(field.key, value)}
+                      error={errors[field.key]}
+                    />
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
 function PreviewColumn({
   columnId,
   maxRows,
@@ -299,7 +385,46 @@ function PreviewColumn({
   if (!columnConfig) return null;
 
   const { slotsPerRow } = columnConfig;
+  const sections = getSections(columnConfig);
+  const isFullWidth = columnConfig.width === 100;
 
+  // Render sections for 100% width columns
+  if (isFullWidth && sections.length > 0) {
+    return (
+      <Box sx={{
+        width: '100%',
+        minWidth: 0,
+        overflow: 'hidden'
+      }}>
+        <Paper
+          elevation={0}
+          sx={{
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 1,
+            p: 2,
+          }}
+        >
+          {sections.map((section, index) => (
+            <PreviewSection
+              key={section.id}
+              sectionId={section.id}
+              sectionName={section.name}
+              slotsPerRow={section.slotsPerRow}
+              columnId={columnId}
+              maxRows={maxRows}
+              schema={schema}
+              formData={formData}
+              errors={errors}
+              onFieldChange={onFieldChange}
+            />
+          ))}
+        </Paper>
+      </Box>
+    );
+  }
+
+  // Original single column rendering for non-100% layouts
   return (
     <Box sx={{
       width: '100%',

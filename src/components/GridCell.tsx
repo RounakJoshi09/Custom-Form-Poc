@@ -10,6 +10,7 @@ import FieldCard from './FieldCard';
 
 interface GridCellProps {
   columnId: string;
+  sectionId?: string;
   rowIndex: number;
   slotIndex: number;
   slotsPerRow: number;
@@ -19,6 +20,7 @@ interface GridCellProps {
 
 export default function GridCell({
   columnId,
+  sectionId,
   rowIndex,
   slotIndex,
   slotsPerRow,
@@ -29,6 +31,7 @@ export default function GridCell({
 
   const position: FieldPosition = {
     columnId,
+    sectionId,
     rowIndex,
     slotIndex,
   };
@@ -42,7 +45,7 @@ export default function GridCell({
       drop: (item: DragItem) => {
         if (item.type === DND_ITEM_TYPES.FIELD_FROM_PALETTE) {
           // Add new field to this specific position
-          actions.addField(item.fieldType as FieldType, undefined, position);
+          actions.addField(item.fieldType as FieldType, columnId, sectionId, position);
         } else if (item.type === DND_ITEM_TYPES.EXISTING_FIELD) {
           // Move existing field to this position
           actions.moveField(item.fieldId, position);
@@ -61,7 +64,7 @@ export default function GridCell({
         canDrop: monitor.canDrop(),
       }),
     }),
-    [columnId, rowIndex, slotIndex, field, actions]
+    [columnId, sectionId, rowIndex, slotIndex, field, actions]
   );
 
   const handleCellClick = (e: React.MouseEvent) => {

@@ -24,7 +24,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
-import { getColumnConfig, getFieldAtPosition, getMaxRowsInLayout } from '@/lib/layout';
+import { getColumnConfig, getFieldAtPosition, getMaxRowsInLayout, getSections } from '@/lib/layout';
 import { submitForm } from '@/lib/persistence';
 import { useDropdownCache } from '@/context/DropdownCacheContext';
 import { DropdownOption } from '@/lib/dropdown-api';
@@ -287,6 +287,92 @@ interface FormFillerColumnProps {
     onFieldChange: (fieldKey: string, value: any) => void;
 }
 
+// FormFillerSection component for rendering individual sections
+function FormFillerSection({
+    sectionId,
+    sectionName,
+    slotsPerRow,
+    columnId,
+    maxRows,
+    schema,
+    formData,
+    errors,
+    onFieldChange,
+}: {
+    sectionId: string;
+    sectionName: string;
+    slotsPerRow: number;
+    columnId: string;
+    maxRows: number;
+    schema: FormSchema;
+    formData: Record<string, any>;
+    errors: Record<string, string>;
+    onFieldChange: (fieldKey: string, value: any) => void;
+}) {
+    return (
+        <Box sx={{ mb: 3 }}>
+            {/* Section Header */}
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {sectionName}
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            
+            {/* Section Fields */}
+            {Array.from({ length: maxRows }).map((_, rowIndex) => {
+                // Check if this row has any fields in this section
+                const rowHasFields = Array.from({ length: slotsPerRow }).some((_, slotIndex) => {
+                    const position = { columnId, sectionId, rowIndex, slotIndex };
+                    const fieldId = getFieldAtPosition(position, schema.positions);
+                    return fieldId !== null;
+                });
+
+                // Only render the row if it has fields
+                if (!rowHasFields) return null;
+
+                return (
+                    <Box key={rowIndex} sx={{
+                        display: 'flex',
+                        gap: 1,
+                        mb: 1,
+                        width: '100%',
+                        overflow: 'hidden'
+                    }}>
+                        {Array.from({ length: slotsPerRow }).map((_, slotIndex) => {
+                            const position = { columnId, sectionId, rowIndex, slotIndex };
+                            const fieldId = getFieldAtPosition(position, schema.positions);
+                            const field = fieldId ? schema.fields.find(f => f.id === fieldId) : undefined;
+
+                            return (
+                                <Box
+                                    key={`${rowIndex}-${slotIndex}`}
+                                    sx={{
+                                        flex: `0 0 ${100 / slotsPerRow}%`,
+                                        maxWidth: `${100 / slotsPerRow}%`,
+                                        minHeight: 80,
+                                        p: 0.5,
+                                        minWidth: 0,
+                                        overflow: 'hidden',
+                                        visibility: field ? 'visible' : 'hidden',
+                                    }}
+                                >
+                                    {field && (
+                                        <FormFillerField
+                                            field={field}
+                                            value={formData[field.key]}
+                                            onChange={(value) => onFieldChange(field.key, value)}
+                                            error={errors[field.key]}
+                                        />
+                                    )}
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                );
+            })}
+        </Box>
+    );
+}
+
 function FormFillerColumn({
     columnId,
     width,
@@ -301,12 +387,62 @@ function FormFillerColumn({
     if (!columnConfig) return null;
 
     const { slotsPerRow } = columnConfig;
+    const sections = getSections(columnConfig);
+    const isFullWidth = columnConfig.width === 100;
 
+    // Render sections for 100% width columns
+    if (isFullWidth && sections.length > 0) {
+        return (
+            <Box sx={{
+                width: '100%',
+                minWidth: 0,
+                overflow: 'hidden'
+            }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        p: 2,
+                    }}
+                >
+                    {sections.map((section) => (
+                        <FormFillerSection
+                            key={section.id}
+                            sectionId={section.id}
+                            sectionName={section.name}
+                            slotsPerRow={section.slotsPerRow}
+                            columnId={columnId}
+                            maxRows={maxRows}
+                            schema={schema}
+                            formData={formData}
+                            errors={errors}
+                            onFieldChange={onFieldChange}
+                        />
+                    ))}
+                </Paper>
+            </Box>
+        );
+    }
+
+    // Original single column rendering for non-100% layouts
     return (
-        <Box sx={{ flex: `0 0 ${width}%`, maxWidth: `${width}%` }}>
+        <Box sx={{
+            width: '100%',
+            minWidth: 0,
+            overflow: 'hidden'
+        }}>
             <Paper
                 elevation={0}
-                sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                sx={{
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
             >
                 <Box sx={{ p: 1 }}>
                     {columnConfig.sectionName && (
@@ -331,14 +467,17 @@ function FormFillerColumn({
                         if (!rowHasFields) return null;
 
                         return (
-                            <Box key={rowIndex} sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                            <Box key={rowIndex} sx={{
+                                display: 'flex',
+                                gap: 1,
+                                mb: 1,
+                                width: '100%',
+                                overflow: 'hidden'
+                            }}>
                                 {Array.from({ length: slotsPerRow }).map((_, slotIndex) => {
                                     const position = { columnId, rowIndex, slotIndex };
                                     const fieldId = getFieldAtPosition(position, schema.positions);
                                     const field = fieldId ? schema.fields.find(f => f.id === fieldId) : undefined;
-
-                                    // Only render the cell if it has a field
-                                    if (!field) return null;
 
                                     return (
                                         <Box
@@ -348,14 +487,19 @@ function FormFillerColumn({
                                                 maxWidth: `${100 / slotsPerRow}%`,
                                                 minHeight: 80,
                                                 p: 0.5,
+                                                minWidth: 0,
+                                                overflow: 'hidden',
+                                                visibility: field ? 'visible' : 'hidden',
                                             }}
                                         >
-                                            <FormFillerField
-                                                field={field}
-                                                value={formData[field.key]}
-                                                onChange={(value) => onFieldChange(field.key, value)}
-                                                error={errors[field.key]}
-                                            />
+                                            {field && (
+                                                <FormFillerField
+                                                    field={field}
+                                                    value={formData[field.key]}
+                                                    onChange={(value) => onFieldChange(field.key, value)}
+                                                    error={errors[field.key]}
+                                                />
+                                            )}
                                         </Box>
                                     );
                                 })}
@@ -471,8 +615,14 @@ export function FormFiller({ schema, onSubmitSuccess }: FormFillerProps) {
                         </Alert>
                     )}
 
-                    {/* Canvas-like layout structure */}
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    {/* Canvas-like layout structure - matching Preview exactly */}
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: schema.layout.columns.map(col => `${col.width}fr`).join(' '),
+                        gap: 2,
+                        width: '100%',
+                        overflow: 'hidden'
+                    }}>
                         {schema.layout.columns.map((column) => (
                             <FormFillerColumn
                                 key={column.id}

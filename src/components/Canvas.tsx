@@ -11,10 +11,11 @@ import {
   TextField,
 } from '@mui/material';
 import { useBuilder } from '@/context/BuilderContext';
-import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition } from '@/lib/layout';
+import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition, getSections } from '@/lib/layout';
 import { LayoutType } from '@/lib/schema';
 import GridCell from './GridCell';
 import RowManagement from './RowManagement';
+import SectionContainer from './SectionContainer';
 
 interface GridColumnProps {
   columnId: string;
@@ -23,7 +24,7 @@ interface GridColumnProps {
 }
 
 function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
-  const { state } = useBuilder();
+  const { state, actions } = useBuilder();
   const { fields, positions } = state.schema;
 
   const columnConfig = getColumnConfig(state.schema.layout, columnId);
@@ -33,7 +34,53 @@ function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
   }
 
   const { slotsPerRow } = columnConfig;
+  const isFullWidth = width === 100;
+  const sections = getSections(columnConfig);
 
+  // Render sections for 100% width columns, or single column for others
+  if (isFullWidth && sections.length > 0) {
+    return (
+      <Box sx={{
+        width: '100%',
+        minWidth: 0,
+        overflow: 'hidden'
+      }}>
+        {sections.map((section) => (
+          <SectionContainer
+            key={section.id}
+            section={section}
+            columnId={columnId}
+            maxRows={maxRows}
+          />
+        ))}
+        
+        {/* Add Section Button */}
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={() => actions.addSection(columnId)}
+            sx={{
+              borderStyle: 'dashed',
+              borderWidth: 2,
+              py: 2,
+              px: 4,
+              color: 'text.secondary',
+              borderColor: 'grey.300',
+              '&:hover': {
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                backgroundColor: 'primary.50',
+              },
+            }}
+          >
+            + Add Section
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Original single column rendering for non-100% layouts
   return (
     <Box sx={{
       width: '100%',
@@ -140,13 +187,14 @@ export default function Canvas() {
           </ButtonGroup>
         </Box>
 
-        {/* Section Names Configuration */}
-        <Box sx={{ mb: 0 }}>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Section Names:
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            {layout.columns.map((column, index) => {
+        {/* Section Names Configuration - Only show for non-100% layouts or 100% without sections */}
+        {layout.type !== '100' || !layout.columns[0]?.sections?.length ? (
+          <Box sx={{ mb: 0 }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Section Names:
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {layout.columns.map((column, index) => {
               // Create descriptive labels based on layout and column position
               const getSectionLabel = () => {
                 if (layout.type === '100') return 'Section Name';
@@ -160,25 +208,26 @@ export default function Canvas() {
                 return `Section ${index + 1} Name`;
               };
 
-              return (
-                <Box sx={{
-                  flex: `0 0 ${column.width}%`,
-                  maxWidth: `${column.width}%`,
-                  minWidth: 0
-                }} key={column.id}>
-                  <TextField
-                    size="small"
-                    label={getSectionLabel()}
-                    placeholder="Optional section label"
-                    value={column.sectionName || ''}
-                    onChange={(e) => actions.updateColumnSectionName(column.id, e.target.value)}
-                    fullWidth
-                  />
-                </Box>
-              );
-            })}
+                return (
+                  <Box sx={{
+                    flex: `0 0 ${column.width}%`,
+                    maxWidth: `${column.width}%`,
+                    minWidth: 0
+                  }} key={column.id}>
+                    <TextField
+                      size="small"
+                      label={getSectionLabel()}
+                      placeholder="Optional section label"
+                      value={column.sectionName || ''}
+                      onChange={(e) => actions.updateColumnSectionName(column.id, e.target.value)}
+                      fullWidth
+                    />
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
-        </Box>
+        ) : null}
 
         {/* Row Management Component */}
         <RowManagement

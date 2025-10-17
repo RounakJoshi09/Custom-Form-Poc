@@ -53,16 +53,26 @@ export interface LayoutConfig {
   columns: ColumnConfig[];
 }
 
+// Section configuration for 100% layout
+export interface SectionConfig {
+  id: string;
+  name: string;
+  slotsPerRow: number; // Max fields per sub-row within this section
+}
+
 export interface ColumnConfig {
   id: string;
   width: number; // Percentage: 25, 50, 75, or 100
   slotsPerRow: number; // Max fields per sub-row
-  sectionName?: string; // Optional section name for display
+  sectionName?: string; // Optional section name for display (deprecated for 100% layout)
+  // New: sections array for 100% layout only
+  sections?: SectionConfig[];
 }
 
 // Position of a field within the layout
 export interface FieldPosition {
   columnId: string;
+  sectionId?: string; // Optional: only used for 100% layout with sections
   rowIndex: number;
   slotIndex: number;
 }

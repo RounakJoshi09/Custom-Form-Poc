@@ -2,6 +2,7 @@ import {
   LayoutType,
   LayoutConfig,
   ColumnConfig,
+  SectionConfig,
   FormField,
   FieldPosition,
 } from './schema';
@@ -25,10 +26,49 @@ export const LAYOUT_CONFIGS: Record<LayoutType, ColumnConfig[]> = {
 
 // Create layout configuration from type
 export function createLayoutConfig(type: LayoutType): LayoutConfig {
+  const columns = LAYOUT_CONFIGS[type].map(column => {
+    if (type === '100') {
+      // For 100% layout, initialize with a default section
+      return {
+        ...column,
+        sections: [{
+          id: `section-${Date.now()}`,
+          name: 'Section 1',
+          slotsPerRow: column.slotsPerRow,
+        }],
+      };
+    }
+    return column;
+  });
+  
   return {
     type,
-    columns: LAYOUT_CONFIGS[type],
+    columns,
   };
+}
+
+// Helper function to create a new section
+export function createSection(name: string, slotsPerRow: number = 5): SectionConfig {
+  return {
+    id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    name,
+    slotsPerRow,
+  };
+}
+
+// Check if a column has sections (100% layout)
+export function hasSection(column: ColumnConfig): boolean {
+  return !!column.sections && column.sections.length > 0;
+}
+
+// Get sections from a column (100% layout only)
+export function getSections(column: ColumnConfig): SectionConfig[] {
+  return column.sections || [];
+}
+
+// Get a specific section by ID
+export function getSectionById(column: ColumnConfig, sectionId: string): SectionConfig | undefined {
+  return column.sections?.find(section => section.id === sectionId);
 }
 
 // Get fields for a specific column organized into rows
@@ -68,6 +108,19 @@ export function getColumnFields(
   return rows;
 }
 
+// Get fields for a specific section within a column
+export function getSectionFields(
+  columnId: string,
+  sectionId: string,
+  fields: FormField[],
+  positions: Record<string, FieldPosition>
+): FormField[] {
+  return fields.filter((field) => {
+    const position = positions[field.id];
+    return position && position.columnId === columnId && position.sectionId === sectionId;
+  });
+}
+
 // Get column configuration by ID
 export function getColumnConfig(
   layout: LayoutConfig,
@@ -80,13 +133,19 @@ export function getColumnConfig(
 export function findNextPosition(
   columnId: string,
   layout: LayoutConfig,
-  positions: Record<string, FieldPosition>
+  positions: Record<string, FieldPosition>,
+  sectionId?: string
 ): FieldPosition | null {
   const column = getColumnConfig(layout, columnId);
   if (!column) return null;
 
-  // Determine current maximum row index used in this column
-  const used = Object.values(positions).filter((p) => p.columnId === columnId);
+  // For 100% layout with sections, use section-specific logic
+  if (column.width === 100 && sectionId && column.sections) {
+    return findNextPositionInSection(columnId, sectionId, column, positions);
+  }
+
+  // Original logic for non-sectioned layouts
+  const used = Object.values(positions).filter((p) => p.columnId === columnId && !p.sectionId);
   const maxRowIndex =
     used.length > 0 ? Math.max(...used.map((p) => p.rowIndex)) : -1;
 
@@ -104,6 +163,39 @@ export function findNextPosition(
 
   // If all existing rows are full, start a new row at the next index
   return { columnId, rowIndex: maxRowIndex + 1, slotIndex: 0 };
+}
+
+// Find next available position within a specific section
+export function findNextPositionInSection(
+  columnId: string,
+  sectionId: string,
+  column: ColumnConfig,
+  positions: Record<string, FieldPosition>
+): FieldPosition | null {
+  const section = getSectionById(column, sectionId);
+  if (!section) return null;
+
+  // Get positions within this section only
+  const used = Object.values(positions).filter(
+    (p) => p.columnId === columnId && p.sectionId === sectionId
+  );
+  const maxRowIndex =
+    used.length > 0 ? Math.max(...used.map((p) => p.rowIndex)) : -1;
+
+  // First, scan existing rows for any free slot
+  for (let rowIndex = 0; rowIndex <= maxRowIndex; rowIndex++) {
+    for (let slotIndex = 0; slotIndex < section.slotsPerRow; slotIndex++) {
+      const isOccupied = used.some(
+        (pos) => pos.rowIndex === rowIndex && pos.slotIndex === slotIndex
+      );
+      if (!isOccupied) {
+        return { columnId, sectionId, rowIndex, slotIndex };
+      }
+    }
+  }
+
+  // If all existing rows are full, start a new row at the next index
+  return { columnId, sectionId, rowIndex: maxRowIndex + 1, slotIndex: 0 };
 }
 
 // Check if a position is valid for a column
@@ -155,7 +247,8 @@ export function isPositionOccupied(
     (pos) =>
       pos.columnId === position.columnId &&
       pos.rowIndex === position.rowIndex &&
-      pos.slotIndex === position.slotIndex
+      pos.slotIndex === position.slotIndex &&
+      pos.sectionId === position.sectionId // Include section match
   );
 }
 
@@ -168,7 +261,8 @@ export function getFieldAtPosition(
     if (
       pos.columnId === position.columnId &&
       pos.rowIndex === position.rowIndex &&
-      pos.slotIndex === position.slotIndex
+      pos.slotIndex === position.slotIndex &&
+      pos.sectionId === position.sectionId // Include section match
     ) {
       return fieldId;
     }
