@@ -9,16 +9,16 @@ import {
 // Mapping of layout types to column configurations
 export const LAYOUT_CONFIGS: Record<LayoutType, ColumnConfig[]> = {
   '25-75': [
-    { id: 'col-25', width: 25, slotsPerRow: 2 },
-    { id: 'col-75', width: 75, slotsPerRow: 3 },
+    { id: 'col-25-75-left', width: 25, slotsPerRow: 2 },
+    { id: 'col-25-75-right', width: 75, slotsPerRow: 3 },
   ],
   '50-50': [
     { id: 'col-50-1', width: 50, slotsPerRow: 2 },
     { id: 'col-50-2', width: 50, slotsPerRow: 2 },
   ],
   '75-25': [
-    { id: 'col-75', width: 75, slotsPerRow: 3 },
-    { id: 'col-25', width: 25, slotsPerRow: 2 },
+    { id: 'col-75-25-left', width: 75, slotsPerRow: 3 },
+    { id: 'col-75-25-right', width: 25, slotsPerRow: 2 },
   ],
   '100': [{ id: 'col-100', width: 100, slotsPerRow: 5 }],
 };
@@ -87,7 +87,8 @@ export function findNextPosition(
 
   // Determine current maximum row index used in this column
   const used = Object.values(positions).filter((p) => p.columnId === columnId);
-  const maxRowIndex = used.length > 0 ? Math.max(...used.map((p) => p.rowIndex)) : -1;
+  const maxRowIndex =
+    used.length > 0 ? Math.max(...used.map((p) => p.rowIndex)) : -1;
 
   // First, scan existing rows for any free slot
   for (let rowIndex = 0; rowIndex <= maxRowIndex; rowIndex++) {
@@ -138,10 +139,10 @@ export function getMaxRowsInLayout(
   const maxUsedRow = Object.values(positions).reduce((max, pos) => {
     return Math.max(max, pos.rowIndex);
   }, -1);
-  
+
   // Calculate the minimum rows needed
   const minRowsNeeded = Math.max(5, maxUsedRow + 1 + minEmptyRows);
-  
+
   return minRowsNeeded;
 }
 
@@ -184,7 +185,7 @@ export function getEmptyRowsCount(
   const maxUsedRow = Object.values(positions).reduce((max, pos) => {
     return Math.max(max, pos.rowIndex);
   }, -1);
-  
+
   return Math.max(0, maxRows - maxUsedRow - 1);
 }
 
@@ -193,7 +194,7 @@ export function isRowEmpty(
   rowIndex: number,
   positions: Record<string, FieldPosition>
 ): boolean {
-  return !Object.values(positions).some(pos => pos.rowIndex === rowIndex);
+  return !Object.values(positions).some((pos) => pos.rowIndex === rowIndex);
 }
 
 // Get layout statistics for better row management
@@ -204,15 +205,19 @@ export function getLayoutStats(
   const maxUsedRow = Object.values(positions).reduce((max, pos) => {
     return Math.max(max, pos.rowIndex);
   }, -1);
-  
-  const totalSlots = layout.columns.reduce((total, col) => total + col.slotsPerRow, 0);
+
+  const totalSlots = layout.columns.reduce(
+    (total, col) => total + col.slotsPerRow,
+    0
+  );
   const usedSlots = Object.keys(positions).length;
-  const utilization = usedSlots > 0 ? (usedSlots / ((maxUsedRow + 1) * totalSlots)) * 100 : 0;
-  
+  const utilization =
+    usedSlots > 0 ? (usedSlots / ((maxUsedRow + 1) * totalSlots)) * 100 : 0;
+
   return {
     maxUsedRow,
     totalFields: usedSlots,
     utilization: Math.round(utilization),
-    recommendedRows: Math.max(5, maxUsedRow + 4) // Always keep 3+ empty rows
+    recommendedRows: Math.max(5, maxUsedRow + 4), // Always keep 3+ empty rows
   };
 }

@@ -146,18 +146,37 @@ export default function Canvas() {
             Section Names:
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            {layout.columns.map((column, index) => (
-              <Box sx={{ flex: layout.columns.length === 1 ? '1 1 100%' : '1 1 50%' }} key={column.id}>
-                <TextField
-                  size="small"
-                  label={`Section ${index + 1} Name`}
-                  placeholder="Optional section label"
-                  value={column.sectionName || ''}
-                  onChange={(e) => actions.updateColumnSectionName(column.id, e.target.value)}
-                  fullWidth
-                />
-              </Box>
-            ))}
+            {layout.columns.map((column, index) => {
+              // Create descriptive labels based on layout and column position
+              const getSectionLabel = () => {
+                if (layout.type === '100') return 'Section Name';
+                if (layout.type === '50-50') return `Section ${index + 1} Name (${column.width}%)`;
+                if (layout.type === '25-75') {
+                  return index === 0 ? 'Left Section Name (25%)' : 'Right Section Name (75%)';
+                }
+                if (layout.type === '75-25') {
+                  return index === 0 ? 'Left Section Name (75%)' : 'Right Section Name (25%)';
+                }
+                return `Section ${index + 1} Name`;
+              };
+
+              return (
+                <Box sx={{
+                  flex: `0 0 ${column.width}%`,
+                  maxWidth: `${column.width}%`,
+                  minWidth: 0
+                }} key={column.id}>
+                  <TextField
+                    size="small"
+                    label={getSectionLabel()}
+                    placeholder="Optional section label"
+                    value={column.sectionName || ''}
+                    onChange={(e) => actions.updateColumnSectionName(column.id, e.target.value)}
+                    fullWidth
+                  />
+                </Box>
+              );
+            })}
           </Box>
         </Box>
 
