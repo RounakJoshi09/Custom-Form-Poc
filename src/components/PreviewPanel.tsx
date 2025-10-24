@@ -22,6 +22,8 @@ import {
   InputLabel,
   Select,
   CircularProgress,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
 import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition, getSections, getSectionFields } from '@/lib/layout';
@@ -297,6 +299,7 @@ function PreviewSection({
   formData,
   errors,
   onFieldChange,
+  hideHeader = false,
 }: {
   sectionId: string;
   sectionName: string;
@@ -307,14 +310,19 @@ function PreviewSection({
   formData: Record<string, any>;
   errors: Record<string, string>;
   onFieldChange: (fieldKey: string, value: any) => void;
+  hideHeader?: boolean;
 }) {
   return (
-    <Box sx={{ mb: 3 }}>
-      {/* Section Header */}
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
-        {sectionName}
-      </Typography>
-      <Divider sx={{ mb: 2 }} />
+    <Box sx={{ mb: hideHeader ? 0 : 3 }}>
+      {/* Section Header - hidden when in tab mode */}
+      {!hideHeader && (
+        <>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+            {sectionName}
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+        </>
+      )}
       
       {/* Section Fields */}
       {Array.from({ length: maxRows }).map((_, rowIndex) => {
@@ -381,14 +389,73 @@ function PreviewColumn({
   onFieldChange,
 }: PreviewColumnProps) {
   const columnConfig = getColumnConfig(schema.layout, columnId);
+  const [activeTab, setActiveTab] = useState(0);
 
   if (!columnConfig) return null;
 
   const { slotsPerRow } = columnConfig;
   const sections = getSections(columnConfig);
   const isFullWidth = columnConfig.width === 100;
+  const shouldTabify = schema.layout.tabify && sections.length > 1;
 
-  // Render sections for 100% width columns
+  // Render sections for 100% width columns with tabs
+  if (isFullWidth && sections.length > 0 && shouldTabify) {
+    return (
+      <Box sx={{
+        width: '100%',
+        minWidth: 0,
+        overflow: 'hidden'
+      }}>
+        <Paper
+          elevation={0}
+          sx={{
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 1,
+            p: 2,
+          }}
+        >
+          {/* Tabs Header */}
+          <Tabs
+            value={activeTab}
+            onChange={(_, newValue) => setActiveTab(newValue)}
+            sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
+          >
+            {sections.map((section, index) => (
+              <Tab key={section.id} label={section.name} />
+            ))}
+          </Tabs>
+
+          {/* Active Tab Content */}
+          {sections.map((section, index) => (
+            <Box
+              key={section.id}
+              role="tabpanel"
+              hidden={activeTab !== index}
+              sx={{ display: activeTab === index ? 'block' : 'none' }}
+            >
+              {activeTab === index && (
+                <PreviewSection
+                  sectionId={section.id}
+                  sectionName={section.name}
+                  slotsPerRow={section.slotsPerRow}
+                  columnId={columnId}
+                  maxRows={maxRows}
+                  schema={schema}
+                  formData={formData}
+                  errors={errors}
+                  onFieldChange={onFieldChange}
+                  hideHeader={true}
+                />
+              )}
+            </Box>
+          ))}
+        </Paper>
+      </Box>
+    );
+  }
+
+  // Render sections for 100% width columns vertically (without tabs)
   if (isFullWidth && sections.length > 0) {
     return (
       <Box sx={{

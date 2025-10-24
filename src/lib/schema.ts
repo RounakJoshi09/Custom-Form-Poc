@@ -51,6 +51,7 @@ export type LayoutType = '25-75' | '50-50' | '75-25' | '100';
 export interface LayoutConfig {
   type: LayoutType;
   columns: ColumnConfig[];
+  tabify?: boolean; // When true, sections in 100% layout are rendered as tabs
 }
 
 // Section configuration for 100% layout

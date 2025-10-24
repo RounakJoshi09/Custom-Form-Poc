@@ -9,6 +9,8 @@ import {
   Button,
   Divider,
   TextField,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import { useBuilder } from '@/context/BuilderContext';
 import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition, getSections } from '@/lib/layout';
@@ -186,6 +188,21 @@ export default function Canvas() {
             ))}
           </ButtonGroup>
         </Box>
+
+        {/* Tabify Checkbox - Only show for 100% layouts with sections */}
+        {layout.type === '100' && layout.columns[0]?.sections && layout.columns[0].sections.length > 1 && (
+          <Box sx={{ mb: 2 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={layout.tabify || false}
+                  onChange={(e) => actions.setTabify(e.target.checked)}
+                />
+              }
+              label="Tabify Sections (render sections as tabs in preview and form)"
+            />
+          </Box>
+        )}
 
         {/* Section Names Configuration - Only show for non-100% layouts or 100% without sections */}
         {layout.type !== '100' || !layout.columns[0]?.sections?.length ? (

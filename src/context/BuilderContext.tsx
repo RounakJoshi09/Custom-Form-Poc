@@ -54,7 +54,8 @@ type BuilderAction =
   // Section-related actions
   | { type: 'ADD_SECTION'; payload: { columnId: string } }
   | { type: 'REMOVE_SECTION'; payload: { columnId: string; sectionId: string } }
-  | { type: 'RENAME_SECTION'; payload: { columnId: string; sectionId: string; name: string } };
+  | { type: 'RENAME_SECTION'; payload: { columnId: string; sectionId: string; name: string } }
+  | { type: 'SET_TABIFY'; payload: boolean };
 
 // Create initial state
 function createInitialState(): BuilderState {
@@ -401,6 +402,20 @@ function builderReducer(
       };
     }
 
+    case 'SET_TABIFY': {
+      return {
+        ...state,
+        schema: {
+          ...state.schema,
+          layout: {
+            ...state.schema.layout,
+            tabify: action.payload,
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -432,6 +447,7 @@ interface BuilderContextType {
     addSection: (columnId: string) => void;
     removeSection: (columnId: string, sectionId: string) => void;
     renameSection: (columnId: string, sectionId: string, name: string) => void;
+    setTabify: (tabify: boolean) => void;
   };
 }
 
@@ -516,6 +532,10 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
 
     renameSection: useCallback((columnId: string, sectionId: string, name: string) => {
       dispatch({ type: 'RENAME_SECTION', payload: { columnId, sectionId, name } });
+    }, []),
+
+    setTabify: useCallback((tabify: boolean) => {
+      dispatch({ type: 'SET_TABIFY', payload: tabify });
     }, []),
   };
 
