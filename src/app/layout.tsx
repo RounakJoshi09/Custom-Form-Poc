@@ -4,6 +4,7 @@ import './globals.css';
 import ThemeRegistry from '@/lib/theme';
 import DnDProvider from '@/lib/dnd-provider';
 import { DropdownCacheProvider } from '@/context/DropdownCacheContext';
+import Navigation from '@/components/Navigation';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,7 +31,10 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeRegistry>
           <DropdownCacheProvider>
-            <DnDProvider>{children}</DnDProvider>
+            <DnDProvider>
+              <Navigation />
+              {children}
+            </DnDProvider>
           </DropdownCacheProvider>
         </ThemeRegistry>
       </body>

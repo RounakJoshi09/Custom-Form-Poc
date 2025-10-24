@@ -102,16 +102,18 @@ export default function GridCell({
             justifyContent: 'center',
             backgroundColor: 
               isOver && canDrop 
-                ? 'primary.50' 
+                ? 'rgba(0, 151, 136, 0.08)' 
                 : isOver && !canDrop 
-                ? 'error.50' 
+                ? 'rgba(211, 47, 47, 0.08)' 
                 : 'transparent',
-            transition: 'all 0.2s ease-in-out',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             cursor: 'pointer',
             position: 'relative',
             '&:hover': {
-              borderColor: canDrop ? 'primary.light' : 'grey.400',
-              backgroundColor: canDrop ? 'primary.25' : 'grey.50',
+              borderColor: canDrop ? 'primary.main' : 'grey.400',
+              backgroundColor: canDrop ? 'rgba(0, 151, 136, 0.04)' : 'rgba(0, 0, 0, 0.02)',
+              transform: 'scale(1.01)',
+              boxShadow: isOver && canDrop ? '0 4px 12px rgba(0, 151, 136, 0.15)' : 'none',
               '& .row-indicator': {
                 opacity: 1,
               },

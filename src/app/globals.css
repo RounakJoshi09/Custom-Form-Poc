@@ -6,7 +6,69 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   height: 100%;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 151, 136, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #009788 0%, #00bcd4 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #008374 0%, #00acc1 100%);
+}
+
+/* Utility Classes */
+.gradient-soft {
+  background: linear-gradient(135deg, 
+    rgba(0, 137, 123, 0.05) 0%, 
+    rgba(232, 245, 232, 0.08) 50%,
+    rgba(81, 45, 168, 0.06) 100%);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #009788 0%, #00bcd4 100%);
+}
+
+.gradient-background {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.2s ease;
+}
+
+.transition-transform {
+  transition: transform 0.2s ease;
+}
+
+/* Elevation Shadows */
+.elevation-1 {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.elevation-2 {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.elevation-3 {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
