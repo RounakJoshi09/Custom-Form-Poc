@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { Container, Typography, Box, Button, Grid, Card, CardContent, useTheme } from '@mui/material';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import {
   Speed as FastIcon,
   Security as SecureIcon,
 } from '@mui/icons-material';
+import { IPaletteOptions } from '@/lib/theme';
 
 export default function Home() {
   const theme = useTheme();
@@ -223,7 +225,7 @@ export default function Home() {
 
           <Grid container spacing={3}>
             {features.map((feature, index) => (
-              <Grid item xs={12} md={6} lg={4} key={index}>
+              <Grid sx={{ xs: 12, md: 6, lg: 4 }} key={index}>
                 <Card
                   sx={{
                     height: '100%',

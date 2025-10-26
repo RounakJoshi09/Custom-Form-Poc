@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { createTheme, ThemeProvider, ThemeOptions, Theme, PaletteOptions, TypographyVariantsOptions, alpha } from '@mui/material/styles';
@@ -35,6 +36,30 @@ export interface IPaletteOptions extends PaletteOptions {
         }
     };
     backgroundGradient: string;
+    primary: {
+        main: string;
+        light: string;
+        dark: string;
+        contrastText: string;
+    };
+    secondary: {
+        main: string;
+        light: string;
+        dark: string;
+        contrastText: string;
+    };
+    error: {
+        main: string;
+    };
+    warning: {
+        main: string;
+    };
+    info: {
+        main: string;
+    };
+    success: {
+        main: string;
+    };
 }
 
 const palette: IPaletteOptions = {
@@ -198,7 +223,7 @@ const typography: ITypographyVariantsOptions = {
         transition: 'all 0.15s ease'
     },
     chipSoft: {
-        background: `linear-gradient(135deg, ${alpha(palette.primary?.main || '#009788', 0.08)} 0%, ${alpha(palette.info?.main || '#0288d1', 0.08)} 100%)`,
+        background: `linear-gradient(135deg, ${alpha(palette.primary?.main || '#009788', 0.08)} 0%, ${alpha('#0288d1', 0.08)} 100%)`,
         color: palette.primary?.main,
         fontWeight: 500
     },
@@ -379,24 +404,24 @@ export const theme: Theme = createTheme(themeOptions);
 
 // Create emotion cache on client side
 function createEmotionCache() {
-  return createCache({ key: 'mui' });
+    return createCache({ key: 'mui' });
 }
 
 interface ThemeRegistryProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 export default function ThemeRegistry({ children }: ThemeRegistryProps) {
-  const [cache] = useState(() => createEmotionCache());
+    const [cache] = useState(() => createEmotionCache());
 
-  return (
-    <CacheProvider value={cache}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
-    </CacheProvider>
-  );
+    return (
+        <CacheProvider value={cache}>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                {children}
+            </ThemeProvider>
+        </CacheProvider>
+    );
 }
 
 export type { ThemeOptions, Theme };

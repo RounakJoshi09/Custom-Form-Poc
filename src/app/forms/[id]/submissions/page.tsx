@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     Container,
     Typography,
@@ -12,9 +13,9 @@ import {
     Paper,
 } from '@mui/material';
 import Link from 'next/link';
-import { ArrowBack, Visibility, Download } from '@mui/icons-material';
-import { loadForm, getFormSubmissions } from '@/lib/persistence';
+import { ArrowBack, Visibility } from '@mui/icons-material';
 import { FormSchema, FormSubmission } from '@/lib/schema';
+import { getSectionFields } from '@/lib/layout';
 
 interface FormSubmissionsPageProps {
     params: Promise<{
@@ -53,7 +54,7 @@ async function getFormAndSubmissionsData(
         const submissions = submissionsResponse.ok ? await submissionsResponse.json() : [];
 
         return { schema, submissions };
-    } catch (error) {
+    } catch {
         return { error: 'Failed to load form data' };
     }
 }
@@ -89,6 +90,59 @@ function SubmissionCard({ submission, schema }: { submission: FormSubmission; sc
         }
     };
 
+    // Organize fields by sections
+    const organizeFieldsBySections = () => {
+        const sectionsData: Array<{
+            sectionName: string;
+            fields: Array<{ field: any; value: any }>;
+        }> = [];
+
+        // Check if this is a 100% layout with sections
+        const mainColumn = schema.layout.columns.find(col => col.width === 100);
+        if (mainColumn && mainColumn.sections && mainColumn.sections.length > 0) {
+            // Organize by sections for 100% layout
+            mainColumn.sections.forEach(section => {
+                const sectionFields = getSectionFields(mainColumn.id, section.id, schema.fields, schema.positions);
+                const fieldsWithValues = sectionFields.map(field => ({
+                    field,
+                    value: submission.data[field.key]
+                })).filter(item => item.value !== null && item.value !== undefined && item.value !== '');
+
+                if (fieldsWithValues.length > 0) {
+                    sectionsData.push({
+                        sectionName: section.name,
+                        fields: fieldsWithValues
+                    });
+                }
+            });
+        } else {
+            // For non-100% layouts or layouts without sections, organize by column
+            schema.layout.columns.forEach(column => {
+                const columnFields = schema.fields.filter(field => {
+                    const position = schema.positions[field.id];
+                    return position && position.columnId === column.id;
+                });
+
+                const fieldsWithValues = columnFields.map(field => ({
+                    field,
+                    value: submission.data[field.key]
+                })).filter(item => item.value !== null && item.value !== undefined && item.value !== '');
+
+                if (fieldsWithValues.length > 0) {
+                    const sectionName = column.sectionName || `Section ${column.id}`;
+                    sectionsData.push({
+                        sectionName,
+                        fields: fieldsWithValues
+                    });
+                }
+            });
+        }
+
+        return sectionsData;
+    };
+
+    const sectionsData = organizeFieldsBySections();
+
     return (
         <Card sx={{ height: '100%' }}>
             <CardContent>
@@ -110,19 +164,34 @@ function SubmissionCard({ submission, schema }: { submission: FormSubmission; sc
                 <Divider sx={{ my: 2 }} />
 
                 <Box sx={{ maxHeight: 300, overflow: 'auto' }}>
-                    {schema.fields.map((field) => {
-                        const value = submission.data[field.key];
-                        return (
-                            <Box key={field.id} sx={{ mb: 2 }}>
-                                <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 600 }}>
-                                    {field.props.label}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    {formatFieldValue(field.key, value)}
-                                </Typography>
-                            </Box>
-                        );
-                    })}
+                    {sectionsData.map((section, sectionIndex) => (
+                        <Box key={sectionIndex} sx={{ mb: 3 }}>
+                            <Typography
+                                variant="subtitle1"
+                                color="primary"
+                                sx={{
+                                    fontWeight: 600,
+                                    mb: 1.5,
+                                    borderBottom: '1px solid',
+                                    borderColor: 'divider',
+                                    pb: 0.5
+                                }}
+                            >
+                                {section.sectionName}
+                            </Typography>
+
+                            {section.fields.map(({ field, value }) => (
+                                <Box key={field.id} sx={{ mb: 1.5, pl: 1 }}>
+                                    <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 500 }}>
+                                        {field.props.label}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {formatFieldValue(field.key, value)}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Box>
+                    ))}
                 </Box>
             </CardContent>
         </Card>
@@ -190,7 +259,7 @@ export default async function FormSubmissionsPage({ params }: FormSubmissionsPag
                         No submissions yet
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        This form hasn't been submitted yet. Share the form link to start collecting responses.
+                        This form hasn&apos;t been submitted yet. Share the form link to start collecting responses.
                     </Typography>
                     <Link href={`/forms/${id}`} style={{ textDecoration: 'none' }}>
                         <Button variant="contained" size="large" startIcon={<Visibility />}>
