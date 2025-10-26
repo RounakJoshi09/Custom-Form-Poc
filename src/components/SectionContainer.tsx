@@ -7,10 +7,8 @@ import {
   Typography,
   TextField,
   IconButton,
-  Divider,
   Menu,
   MenuItem,
-  Tooltip,
 } from '@mui/material';
 import { MoreVert as MoreVertIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useBuilder } from '@/context/BuilderContext';
@@ -27,7 +25,7 @@ interface SectionContainerProps {
 export default function SectionContainer({ section, columnId, maxRows }: SectionContainerProps) {
   const { state, actions } = useBuilder();
   const { fields, positions } = state.schema;
-  
+
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState(section.name);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -129,7 +127,7 @@ export default function SectionContainer({ section, columnId, maxRows }: Section
           <Typography variant="caption" color="text.secondary">
             {section.slotsPerRow} slots per row
           </Typography>
-          
+
           <IconButton size="small" onClick={handleMenuClick}>
             <MoreVertIcon fontSize="small" />
           </IconButton>
@@ -150,7 +148,7 @@ export default function SectionContainer({ section, columnId, maxRows }: Section
             <MenuItem onClick={() => { setEditingName(true); handleMenuClose(); }}>
               Rename Section
             </MenuItem>
-            <MenuItem 
+            <MenuItem
               onClick={handleRemoveSection}
               disabled={hasFields}
               sx={{ color: hasFields ? 'text.disabled' : 'error.main' }}
@@ -163,9 +161,15 @@ export default function SectionContainer({ section, columnId, maxRows }: Section
       </Box>
 
       {/* Section Grid */}
-      <Box sx={{ p: 1 }}>
+      <Box sx={{ p: 1, overflow: 'hidden' }}>
         {Array.from({ length: maxRows }).map((_, rowIndex) => (
-          <Box key={rowIndex} sx={{ display: 'flex', gap: 1, mb: 1 }}>
+          <Box key={rowIndex} sx={{
+            display: 'flex',
+            gap: 1,
+            mb: 1,
+            width: '100%',
+            overflow: 'hidden'
+          }}>
             {Array.from({ length: section.slotsPerRow }).map((_, slotIndex) => {
               const position = { columnId, sectionId: section.id, rowIndex, slotIndex };
               const fieldId = getFieldAtPosition(position, positions);

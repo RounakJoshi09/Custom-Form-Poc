@@ -45,7 +45,7 @@ function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
       <Box sx={{
         width: '100%',
         minWidth: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}>
         {sections.map((section) => (
           <SectionContainer
@@ -55,7 +55,7 @@ function GridColumn({ columnId, width, maxRows }: GridColumnProps) {
             maxRows={maxRows}
           />
         ))}
-        
+
         {/* Add Section Button */}
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Button
@@ -212,18 +212,18 @@ export default function Canvas() {
             </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
               {layout.columns.map((column, index) => {
-              // Create descriptive labels based on layout and column position
-              const getSectionLabel = () => {
-                if (layout.type === '100') return 'Section Name';
-                if (layout.type === '50-50') return `Section ${index + 1} Name (${column.width}%)`;
-                if (layout.type === '25-75') {
-                  return index === 0 ? 'Left Section Name (25%)' : 'Right Section Name (75%)';
-                }
-                if (layout.type === '75-25') {
-                  return index === 0 ? 'Left Section Name (75%)' : 'Right Section Name (25%)';
-                }
-                return `Section ${index + 1} Name`;
-              };
+                // Create descriptive labels based on layout and column position
+                const getSectionLabel = () => {
+                  if (layout.type === '100') return 'Section Name';
+                  if (layout.type === '50-50') return `Section ${index + 1} Name (${column.width}%)`;
+                  if (layout.type === '25-75') {
+                    return index === 0 ? 'Left Section Name (25%)' : 'Right Section Name (75%)';
+                  }
+                  if (layout.type === '75-25') {
+                    return index === 0 ? 'Left Section Name (75%)' : 'Right Section Name (25%)';
+                  }
+                  return `Section ${index + 1} Name`;
+                };
 
                 return (
                   <Box sx={{
@@ -262,7 +262,7 @@ export default function Canvas() {
           gridTemplateColumns: layout.columns.map(col => `${col.width}fr`).join(' '),
           gap: 2,
           width: '100%',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}>
           {layout.columns.map((column) => (
             <GridColumn

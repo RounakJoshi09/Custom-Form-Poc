@@ -80,11 +80,13 @@ export default function GridCell({
       ref={drop as any}
       onClick={handleCellClick}
       sx={{
-        flex: `0 0 ${100 / slotsPerRow}%`,
-        maxWidth: `${100 / slotsPerRow}%`,
+        flex: `0 0 calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
+        maxWidth: `calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
         minHeight: 80,
         p: 0.5,
         position: 'relative',
+        minWidth: 0,
+        overflow: 'hidden',
       }}
     >
       {field ? (
@@ -100,12 +102,12 @@ export default function GridCell({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 
-              isOver && canDrop 
-                ? 'rgba(0, 151, 136, 0.08)' 
-                : isOver && !canDrop 
-                ? 'rgba(211, 47, 47, 0.08)' 
-                : 'transparent',
+            backgroundColor:
+              isOver && canDrop
+                ? 'rgba(0, 151, 136, 0.08)'
+                : isOver && !canDrop
+                  ? 'rgba(211, 47, 47, 0.08)'
+                  : 'transparent',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             cursor: 'pointer',
             position: 'relative',
@@ -136,7 +138,7 @@ export default function GridCell({
           >
             R{rowIndex + 1}C{slotIndex + 1}
           </Box>
-          
+
           {isOver && !canDrop && (
             <Box
               sx={{
@@ -152,7 +154,7 @@ export default function GridCell({
           )}
         </Box>
       )}
-      
+
       {/* Visual feedback for occupied cells during drag operations */}
       {field && isOver && canDrop && (
         <Box

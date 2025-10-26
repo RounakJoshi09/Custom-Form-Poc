@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Paper,
     Box,
@@ -43,7 +43,7 @@ function FormFillerField({ field, value, onChange, error }: FormFillerFieldProps
     const [selectOpen, setSelectOpen] = useState(false);
     const [apiOptions, setApiOptions] = useState<DropdownOption[]>([]);
     const [apiOptionsLoaded, setApiOptionsLoaded] = useState(false);
-    
+
     const dropdownCache = useDropdownCache();
 
     // Load API options for select fields when opened
@@ -53,7 +53,7 @@ function FormFillerField({ field, value, onChange, error }: FormFillerFieldProps
         }
 
         const { apiEndpoint, apiToken, apiMethod, apiPayload } = field.props;
-        
+
         if (!apiEndpoint || !apiMethod) {
             return;
         }
@@ -65,10 +65,10 @@ function FormFillerField({ field, value, onChange, error }: FormFillerFieldProps
                 apiMethod,
                 apiPayload,
             });
-            
+
             setApiOptions(options);
             setApiOptionsLoaded(true);
-        } catch (error) {
+        } catch {
             // Error handling is done in the cache context
             setApiOptionsLoaded(true);
         }
@@ -115,7 +115,7 @@ function FormFillerField({ field, value, onChange, error }: FormFillerFieldProps
             const isLoading = isApiDriven && dropdownCache.isLoading(field.id);
             const hasApiError = isApiDriven && dropdownCache.hasError(field.id);
             const isDisabled = isApiDriven && (isLoading || hasApiError);
-            
+
             return (
                 <FormControl fullWidth size="small" margin="normal" error={Boolean(error)}>
                     <InputLabel shrink={selectOpen || isFilled}>{field.props.label}</InputLabel>
@@ -324,7 +324,7 @@ function FormFillerSection({
                     <Divider sx={{ mb: 2 }} />
                 </>
             )}
-            
+
             {/* Section Fields */}
             {Array.from({ length: maxRows }).map((_, rowIndex) => {
                 // Check if this row has any fields in this section
@@ -354,8 +354,8 @@ function FormFillerSection({
                                 <Box
                                     key={`${rowIndex}-${slotIndex}`}
                                     sx={{
-                                        flex: `0 0 ${100 / slotsPerRow}%`,
-                                        maxWidth: `${100 / slotsPerRow}%`,
+                                        flex: `0 0 calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
+                                        maxWidth: `calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
                                         minHeight: 80,
                                         p: 0.5,
                                         minWidth: 0,
@@ -383,7 +383,6 @@ function FormFillerSection({
 
 function FormFillerColumn({
     columnId,
-    width,
     maxRows,
     schema,
     formData,
@@ -423,7 +422,7 @@ function FormFillerColumn({
                         onChange={(_, newValue) => setActiveTab(newValue)}
                         sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
                     >
-                        {sections.map((section, index) => (
+                        {sections.map((section) => (
                             <Tab key={section.id} label={section.name} />
                         ))}
                     </Tabs>
@@ -550,8 +549,8 @@ function FormFillerColumn({
                                         <Box
                                             key={`${rowIndex}-${slotIndex}`}
                                             sx={{
-                                                flex: `0 0 ${100 / slotsPerRow}%`,
-                                                maxWidth: `${100 / slotsPerRow}%`,
+                                                flex: `0 0 calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
+                                                maxWidth: `calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
                                                 minHeight: 80,
                                                 p: 0.5,
                                                 minWidth: 0,
@@ -651,7 +650,7 @@ export function FormFiller({ schema, onSubmitSuccess }: FormFillerProps) {
                     text: result.error || 'Failed to submit form'
                 });
             }
-        } catch (error) {
+        } catch {
             setSubmitMessage({
                 type: 'error',
                 text: 'An unexpected error occurred'

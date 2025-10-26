@@ -26,7 +26,7 @@ import {
   Tab,
 } from '@mui/material';
 import { FormField, FormSchema } from '@/lib/schema';
-import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition, getSections, getSectionFields } from '@/lib/layout';
+import { getColumnConfig, getMaxRowsInLayout, getFieldAtPosition, getSections } from '@/lib/layout';
 import { useDropdownCache } from '@/context/DropdownCacheContext';
 import { DropdownOption } from '@/lib/dropdown-api';
 
@@ -323,7 +323,7 @@ function PreviewSection({
           <Divider sx={{ mb: 2 }} />
         </>
       )}
-      
+
       {/* Section Fields */}
       {Array.from({ length: maxRows }).map((_, rowIndex) => {
         // Check if this row has any fields in this section
@@ -353,8 +353,8 @@ function PreviewSection({
                 <Box
                   key={`${rowIndex}-${slotIndex}`}
                   sx={{
-                    flex: `0 0 ${100 / slotsPerRow}%`,
-                    maxWidth: `${100 / slotsPerRow}%`,
+                    flex: `0 0 calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
+                    maxWidth: `calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
                     minHeight: 80,
                     p: 0.5,
                     minWidth: 0,
@@ -421,20 +421,20 @@ function PreviewColumn({
             onChange={(_, newValue) => setActiveTab(newValue)}
             sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
           >
-            {sections.map((section, index) => (
+            {sections.map((section) => (
               <Tab key={section.id} label={section.name} />
             ))}
           </Tabs>
 
           {/* Active Tab Content */}
-          {sections.map((section, index) => (
+          {sections.map((section, sectionIndex) => (
             <Box
               key={section.id}
               role="tabpanel"
-              hidden={activeTab !== index}
-              sx={{ display: activeTab === index ? 'block' : 'none' }}
+              hidden={activeTab !== sectionIndex}
+              sx={{ display: activeTab === sectionIndex ? 'block' : 'none' }}
             >
-              {activeTab === index && (
+              {activeTab === sectionIndex && (
                 <PreviewSection
                   sectionId={section.id}
                   sectionName={section.name}
@@ -472,7 +472,7 @@ function PreviewColumn({
             p: 2,
           }}
         >
-          {sections.map((section, index) => (
+          {sections.map((section) => (
             <PreviewSection
               key={section.id}
               sectionId={section.id}
@@ -548,8 +548,8 @@ function PreviewColumn({
                     <Box
                       key={`${rowIndex}-${slotIndex}`}
                       sx={{
-                        flex: `0 0 ${100 / slotsPerRow}%`,
-                        maxWidth: `${100 / slotsPerRow}%`,
+                        flex: `0 0 calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
+                        maxWidth: `calc(${100 / slotsPerRow}% - ${(slotsPerRow - 1) * 8 / slotsPerRow}px)`,
                         minHeight: 80,
                         p: 0.5,
                         minWidth: 0, // Allow shrinking
